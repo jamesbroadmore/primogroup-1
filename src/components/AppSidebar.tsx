@@ -8,6 +8,7 @@ import {
   FileText,
   AlertTriangle,
   ShieldCheck,
+  FileUp,
   DollarSign,
   BarChart3,
   Settings,
