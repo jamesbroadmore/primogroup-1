@@ -10,6 +10,7 @@ import {
   ShieldCheck,
   FileUp,
   DollarSign,
+  Receipt,
   BarChart3,
   Settings,
   LogOut,
