@@ -30,6 +30,7 @@ type ClientForm = z.infer<typeof clientSchema>;
 const emptyForm: ClientForm = {
   first_name: "",
   last_name: "",
+  preferred_name: "",
   email: "",
   phone: "",
   date_of_birth: "",
