@@ -2,6 +2,9 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { MessageSquare, X, Send, Loader2, Bot, User } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
+import { supabase } from "@/integrations/supabase/client";
+import { motion, AnimatePresence } from "framer-motion";
+import ReactMarkdown from "react-markdown";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
