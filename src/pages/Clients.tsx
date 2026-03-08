@@ -1,10 +1,13 @@
+import { useState } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import { Plus, Search, MoreHorizontal, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { AddClientDialog } from "@/components/AddClientDialog";
 
 export default function Clients() {
+  const [showAdd, setShowAdd] = useState(false);
   const { data: clientsData = [], isLoading } = useQuery({
     queryKey: ["clients"],
     queryFn: async () => {
