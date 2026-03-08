@@ -11,7 +11,6 @@ import {
   BarChart3,
   Settings,
   LogOut,
-  Heart,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -26,6 +25,7 @@ import {
   SidebarFooter,
   useSidebar,
 } from "@/components/ui/sidebar";
+import cartersIcon from "@/assets/icon.png";
 
 const navItems = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
@@ -48,17 +48,15 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon" className="border-r-0">
-      <div className="flex items-center gap-2 px-4 py-5 border-b border-sidebar-border">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sidebar-primary">
-          <Heart className="h-4 w-4 text-sidebar-primary-foreground" />
-        </div>
+      <div className="flex items-center gap-2.5 px-4 py-5 border-b border-sidebar-border">
+        <img src={cartersIcon} alt="Carters Care Group" className="h-9 w-9 shrink-0" />
         {!collapsed && (
           <div className="flex flex-col">
             <span className="text-sm font-bold text-sidebar-primary-foreground tracking-tight">
               Carters Care
             </span>
             <span className="text-[10px] text-sidebar-foreground/60 uppercase tracking-widest">
-              Platform
+              Group
             </span>
           </div>
         )}
@@ -75,7 +73,7 @@ export function AppSidebar() {
                       to={item.url}
                       end={item.url === "/"}
                       className="flex items-center gap-3 rounded-lg px-3 py-2 text-sidebar-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-                      activeClassName="bg-sidebar-accent text-sidebar-primary font-semibold"
+                      activeClassName="bg-sidebar-accent text-sidebar-primary-foreground font-semibold"
                     >
                       <item.icon className="h-4 w-4 shrink-0" />
                       {!collapsed && <span className="text-sm">{item.title}</span>}
