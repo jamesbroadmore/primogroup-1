@@ -121,18 +121,12 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon" className="border-r-0">
-      <div className="flex items-center gap-2.5 px-4 py-5 border-b border-sidebar-border">
-        <img src={cartersIcon} alt="Carters Care Group" className="h-9 w-9 shrink-0" />
-        {!collapsed && (
-          <div className="flex flex-col">
-            <span className="text-sm font-bold text-sidebar-primary-foreground tracking-tight">
-              Carters Care
-            </span>
-            <span className="text-[10px] text-sidebar-foreground/60 uppercase tracking-widest">
-              Group
-            </span>
-          </div>
-        )}
+      <div className={`flex items-center border-b border-sidebar-border ${collapsed ? "justify-center px-2 py-4" : "justify-center px-4 py-5"}`}>
+        <img
+          src={cartersIcon}
+          alt="Carters Care Group"
+          className={`shrink-0 transition-all duration-200 ${collapsed ? "h-8 w-8" : "h-12 w-12"}`}
+        />
       </div>
 
       <SidebarContent className="pt-1">
