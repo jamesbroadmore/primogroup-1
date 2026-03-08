@@ -7,6 +7,7 @@ import Dashboard from "./pages/Dashboard";
 import Staff from "./pages/Staff";
 import Clients from "./pages/Clients";
 import Roster from "./pages/Roster";
+import ShiftCheckIn from "./pages/ShiftCheckIn";
 import Timesheets from "./pages/Timesheets";
 import CaseNotes from "./pages/CaseNotes";
 import Incidents from "./pages/Incidents";
@@ -29,6 +30,7 @@ const App = () => (
           <Route path="/staff" element={<Staff />} />
           <Route path="/clients" element={<Clients />} />
           <Route path="/roster" element={<Roster />} />
+          <Route path="/check-in" element={<ShiftCheckIn />} />
           <Route path="/timesheets" element={<Timesheets />} />
           <Route path="/case-notes" element={<CaseNotes />} />
           <Route path="/incidents" element={<Incidents />} />
