@@ -94,6 +94,14 @@ export default function Dashboard() {
   return (
     <AppLayout title="Dashboard">
       <div className="space-y-6">
+        <motion.h2
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-xl font-semibold text-foreground"
+        >
+          Hello, {greeting ?? "..."}
+        </motion.h2>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {metrics.map((m, i) => (
             <MetricCard key={i} {...m} />
