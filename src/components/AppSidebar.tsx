@@ -30,27 +30,31 @@ import {
 } from "@/components/ui/sidebar";
 import cartersIcon from "@/assets/icon.png";
 
-const navItems = [
-  { title: "Dashboard", url: "/", icon: LayoutDashboard },
-  { title: "Staff", url: "/staff", icon: Users },
-  { title: "Clients", url: "/clients", icon: UserCircle },
-  { title: "Roster", url: "/roster", icon: CalendarDays },
-  { title: "Check-In", url: "/check-in", icon: MapPinCheck },
-  { title: "Timesheets", url: "/timesheets", icon: Clock },
-  { title: "Case Notes", url: "/case-notes", icon: FileText },
-  { title: "Incidents", url: "/incidents", icon: AlertTriangle },
-  { title: "Compliance", url: "/compliance", icon: ShieldCheck },
-  { title: "Financials", url: "/financials", icon: DollarSign },
-  { title: "Reports", url: "/reports", icon: BarChart3 },
-  { title: "Onboarding", url: "/onboarding", icon: GraduationCap },
-  { title: "Settings", url: "/settings", icon: Settings },
+const allNavItems = [
+  { title: "Dashboard", url: "/", icon: LayoutDashboard, adminOnly: true },
+  { title: "Staff", url: "/staff", icon: Users, adminOnly: true },
+  { title: "Clients", url: "/clients", icon: UserCircle, adminOnly: false },
+  { title: "Roster", url: "/roster", icon: CalendarDays, adminOnly: false },
+  { title: "Check-In", url: "/check-in", icon: MapPinCheck, adminOnly: false },
+  { title: "Timesheets", url: "/timesheets", icon: Clock, adminOnly: false },
+  { title: "Case Notes", url: "/case-notes", icon: FileText, adminOnly: false },
+  { title: "Incidents", url: "/incidents", icon: AlertTriangle, adminOnly: false },
+  { title: "Compliance", url: "/compliance", icon: ShieldCheck, adminOnly: true },
+  { title: "Financials", url: "/financials", icon: DollarSign, adminOnly: true },
+  { title: "Reports", url: "/reports", icon: BarChart3, adminOnly: true },
+  { title: "Onboarding", url: "/onboarding", icon: GraduationCap, adminOnly: false },
+  { title: "Settings", url: "/settings", icon: Settings, adminOnly: false },
 ];
 
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
-  const { user, signOut } = useAuth();
+  const { user, signOut, isAdmin } = useAuth();
+
+  const navItems = isAdmin
+    ? allNavItems
+    : allNavItems.filter((item) => !item.adminOnly);
 
   const initials = user?.user_metadata?.display_name
     ? user.user_metadata.display_name.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2)
