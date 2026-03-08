@@ -65,6 +65,42 @@ export type Database = {
           },
         ]
       }
+      client_staff_assignments: {
+        Row: {
+          client_id: string
+          created_at: string
+          id: string
+          staff_id: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          id?: string
+          staff_id: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          id?: string
+          staff_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_staff_assignments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_staff_assignments_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clients: {
         Row: {
           address: string | null

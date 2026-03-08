@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, X } from "lucide-react";
+import { Loader2, X, UserPlus, X as XIcon } from "lucide-react";
 import { z } from "zod";
+import { useAuth } from "@/contexts/AuthContext";
 
 const clientSchema = z.object({
   first_name: z.string().trim().min(1, "First name is required").max(100),
@@ -35,9 +36,66 @@ interface EditClientDialogProps {
 }
 
 export function EditClientDialog({ open, onClose, client }: EditClientDialogProps) {
+  const { isAdmin } = useAuth();
   const queryClient = useQueryClient();
   const [form, setForm] = useState<ClientForm>({} as ClientForm);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [staffToAssign, setStaffToAssign] = useState("");
+
+  // Fetch all staff for assignment dropdown
+  const { data: allStaff = [] } = useQuery({
+    queryKey: ["staff-list"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("staff").select("id, first_name, last_name").eq("status", "active").order("first_name");
+      if (error) throw error;
+      return data;
+    },
+    enabled: open && isAdmin,
+  });
+
+  // Fetch current assignments for this client
+  const { data: currentAssignments = [] } = useQuery({
+    queryKey: ["client-assignments", client?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("client_staff_assignments")
+        .select("id, staff_id, staff:staff_id(id, first_name, last_name)")
+        .eq("client_id", client.id);
+      if (error) throw error;
+      return data;
+    },
+    enabled: open && !!client?.id,
+  });
+
+  const assignMutation = useMutation({
+    mutationFn: async (staffId: string) => {
+      const { error } = await supabase.from("client_staff_assignments").insert({ client_id: client.id, staff_id: staffId });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["client-assignments", client?.id] });
+      queryClient.invalidateQueries({ queryKey: ["client-staff-assignments"] });
+      setStaffToAssign("");
+      toast.success("Staff assigned");
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+
+  const unassignMutation = useMutation({
+    mutationFn: async (assignmentId: string) => {
+      const { error } = await supabase.from("client_staff_assignments").delete().eq("id", assignmentId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["client-assignments", client?.id] });
+      queryClient.invalidateQueries({ queryKey: ["client-staff-assignments"] });
+      toast.success("Staff unassigned");
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+
+  const assignedStaffIds = currentAssignments.map((a: any) => a.staff_id);
+  const availableStaff = allStaff.filter((s) => !assignedStaffIds.includes(s.id));
 
   useEffect(() => {
     if (client) {
@@ -215,6 +273,47 @@ export function EditClientDialog({ open, onClose, client }: EditClientDialogProp
               className="w-full rounded-lg border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
             />
           </div>
+
+          {/* Assigned Staff Section */}
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider pt-2">Assigned Staff</p>
+          {currentAssignments.length > 0 ? (
+            <div className="flex flex-wrap gap-2">
+              {currentAssignments.map((a: any) => (
+                <span key={a.id} className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
+                  {a.staff?.first_name} {a.staff?.last_name}
+                  {isAdmin && (
+                    <button type="button" onClick={() => unassignMutation.mutate(a.id)} className="hover:text-destructive">
+                      <X className="h-3 w-3" />
+                    </button>
+                  )}
+                </span>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-muted-foreground">No staff assigned</p>
+          )}
+          {isAdmin && availableStaff.length > 0 && (
+            <div className="flex gap-2">
+              <select
+                value={staffToAssign}
+                onChange={(e) => setStaffToAssign(e.target.value)}
+                className="flex-1 h-9 rounded-lg border bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              >
+                <option value="">Select staff to assign...</option>
+                {availableStaff.map((s) => (
+                  <option key={s.id} value={s.id}>{s.first_name} {s.last_name}</option>
+                ))}
+              </select>
+              <button
+                type="button"
+                disabled={!staffToAssign || assignMutation.isPending}
+                onClick={() => staffToAssign && assignMutation.mutate(staffToAssign)}
+                className="h-9 px-3 rounded-lg bg-primary text-primary-foreground text-sm font-medium flex items-center gap-1 hover:opacity-90 transition-opacity disabled:opacity-50"
+              >
+                <UserPlus className="h-3.5 w-3.5" /> Assign
+              </button>
+            </div>
+          )}
 
           <div className="flex justify-end gap-2 pt-2">
             <button type="button" onClick={onClose} className="h-9 px-4 rounded-lg border text-sm font-medium text-foreground hover:bg-secondary transition-colors">

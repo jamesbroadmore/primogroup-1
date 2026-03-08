@@ -41,6 +41,26 @@ export default function Clients() {
     },
   });
 
+  const { data: assignments = [] } = useQuery({
+    queryKey: ["client-staff-assignments"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("client_staff_assignments")
+        .select("client_id, staff_id, staff:staff_id(id, first_name, last_name)");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const assignmentsByClient = useMemo(() => {
+    const map: Record<string, { id: string; first_name: string; last_name: string }[]> = {};
+    assignments.forEach((a: any) => {
+      if (!map[a.client_id]) map[a.client_id] = [];
+      if (a.staff) map[a.client_id].push(a.staff);
+    });
+    return map;
+  }, [assignments]);
+
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase.from("clients").delete().eq("id", id);
@@ -188,6 +208,18 @@ export default function Clients() {
                       </div>
                     )}
                     {c.phone && <div className="flex justify-between"><span className="text-muted-foreground">Phone</span><span className="text-card-foreground font-medium">{c.phone}</span></div>}
+                    {assignmentsByClient[c.id] && assignmentsByClient[c.id].length > 0 && (
+                      <div className="pt-1">
+                        <span className="text-muted-foreground">Assigned Staff</span>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {assignmentsByClient[c.id].map((s) => (
+                            <span key={s.id} className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-medium">
+                              {s.first_name} {s.last_name}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </motion.div>
               );
