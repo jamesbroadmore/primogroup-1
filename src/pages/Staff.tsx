@@ -1,13 +1,15 @@
 import { useState } from "react";
 import { AppLayout } from "@/components/AppLayout";
-import { Plus, Search, MoreHorizontal, CheckCircle, XCircle, Loader2 } from "lucide-react";
+import { Plus, Search, CheckCircle, XCircle, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AddStaffDialog } from "@/components/AddStaffDialog";
+import { EditStaffDialog } from "@/components/EditStaffDialog";
 
 export default function Staff() {
   const [showAdd, setShowAdd] = useState(false);
+  const [editStaff, setEditStaff] = useState<any>(null);
   const { data: staffData = [], isLoading } = useQuery({
     queryKey: ["staff"],
     queryFn: async () => {
@@ -31,6 +33,7 @@ export default function Staff() {
         </div>
 
         <AddStaffDialog open={showAdd} onClose={() => setShowAdd(false)} />
+        <EditStaffDialog open={!!editStaff} onClose={() => setEditStaff(null)} staff={editStaff} />
 
         {isLoading ? (
           <div className="flex justify-center py-16"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
@@ -51,12 +54,15 @@ export default function Staff() {
                     <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden md:table-cell">Type</th>
                     <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden md:table-cell">Email</th>
                     <th className="text-left px-4 py-3 font-medium text-muted-foreground">Status</th>
-                    <th className="px-4 py-3"></th>
                   </tr>
                 </thead>
                 <tbody>
                   {staffData.map((s) => (
-                    <tr key={s.id} className="border-b last:border-0 hover:bg-secondary/30 transition-colors">
+                    <tr
+                      key={s.id}
+                      onClick={() => setEditStaff(s)}
+                      className="border-b last:border-0 hover:bg-secondary/30 transition-colors cursor-pointer"
+                    >
                       <td className="px-4 py-3 font-medium text-card-foreground">{s.first_name}</td>
                       <td className="px-4 py-3 text-card-foreground">{s.last_name}</td>
                       <td className="px-4 py-3 text-muted-foreground hidden lg:table-cell">{(s as any).preferred_name || "—"}</td>
@@ -70,9 +76,6 @@ export default function Staff() {
                           {s.status === "active" ? <CheckCircle className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
                           {s.status}
                         </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <button className="text-muted-foreground hover:text-foreground transition-colors"><MoreHorizontal className="h-4 w-4" /></button>
                       </td>
                     </tr>
                   ))}
