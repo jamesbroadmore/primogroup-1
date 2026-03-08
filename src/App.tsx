@@ -32,17 +32,19 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/login" element={<Login />} />
-            <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            <Route path="/staff" element={<ProtectedRoute><Staff /></ProtectedRoute>} />
+            {/* Admin-only pages */}
+            <Route path="/" element={<ProtectedRoute adminOnly><Dashboard /></ProtectedRoute>} />
+            <Route path="/staff" element={<ProtectedRoute adminOnly><Staff /></ProtectedRoute>} />
+            <Route path="/compliance" element={<ProtectedRoute adminOnly><Compliance /></ProtectedRoute>} />
+            <Route path="/financials" element={<ProtectedRoute adminOnly><Financials /></ProtectedRoute>} />
+            <Route path="/reports" element={<ProtectedRoute adminOnly><Reports /></ProtectedRoute>} />
+            {/* All authenticated users */}
             <Route path="/clients" element={<ProtectedRoute><Clients /></ProtectedRoute>} />
             <Route path="/roster" element={<ProtectedRoute><Roster /></ProtectedRoute>} />
             <Route path="/check-in" element={<ProtectedRoute><ShiftCheckIn /></ProtectedRoute>} />
             <Route path="/timesheets" element={<ProtectedRoute><Timesheets /></ProtectedRoute>} />
             <Route path="/case-notes" element={<ProtectedRoute><CaseNotes /></ProtectedRoute>} />
             <Route path="/incidents" element={<ProtectedRoute><Incidents /></ProtectedRoute>} />
-            <Route path="/compliance" element={<ProtectedRoute><Compliance /></ProtectedRoute>} />
-            <Route path="/financials" element={<ProtectedRoute><Financials /></ProtectedRoute>} />
-            <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
             <Route path="/onboarding" element={<ProtectedRoute><Onboarding /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
