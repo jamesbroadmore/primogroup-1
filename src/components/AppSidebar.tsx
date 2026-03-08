@@ -10,6 +10,7 @@ import {
   ShieldCheck,
   FileUp,
   DollarSign,
+  Receipt,
   BarChart3,
   Settings,
   LogOut,
@@ -66,6 +67,7 @@ const navGroups: NavGroup[] = [
       { title: "Roster", url: "/roster", icon: CalendarDays, adminOnly: false },
       { title: "Check-In", url: "/check-in", icon: MapPinCheck, adminOnly: false },
       { title: "Timesheets", url: "/timesheets", icon: Clock, adminOnly: false },
+      { title: "Invoices", url: "/invoices", icon: Receipt, adminOnly: false },
     ],
   },
   {

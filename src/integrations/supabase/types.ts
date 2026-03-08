@@ -302,6 +302,123 @@ export type Database = {
           },
         ]
       }
+      invoice_line_items: {
+        Row: {
+          amount: number
+          client_id: string | null
+          created_at: string
+          description: string
+          hours: number
+          id: string
+          invoice_id: string
+          rate: number
+          service_date: string | null
+          timesheet_id: string | null
+        }
+        Insert: {
+          amount?: number
+          client_id?: string | null
+          created_at?: string
+          description: string
+          hours?: number
+          id?: string
+          invoice_id: string
+          rate?: number
+          service_date?: string | null
+          timesheet_id?: string | null
+        }
+        Update: {
+          amount?: number
+          client_id?: string | null
+          created_at?: string
+          description?: string
+          hours?: number
+          id?: string
+          invoice_id?: string
+          rate?: number
+          service_date?: string | null
+          timesheet_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_line_items_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_line_items_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_line_items_timesheet_id_fkey"
+            columns: ["timesheet_id"]
+            isOneToOne: false
+            referencedRelation: "timesheets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoices: {
+        Row: {
+          abn: string | null
+          created_at: string
+          due_date: string | null
+          gst: number
+          id: string
+          invoice_date: string
+          invoice_number: string
+          notes: string | null
+          staff_id: string
+          status: string
+          subtotal: number
+          total: number
+          updated_at: string
+        }
+        Insert: {
+          abn?: string | null
+          created_at?: string
+          due_date?: string | null
+          gst?: number
+          id?: string
+          invoice_date?: string
+          invoice_number: string
+          notes?: string | null
+          staff_id: string
+          status?: string
+          subtotal?: number
+          total?: number
+          updated_at?: string
+        }
+        Update: {
+          abn?: string | null
+          created_at?: string
+          due_date?: string | null
+          gst?: number
+          id?: string
+          invoice_date?: string
+          invoice_number?: string
+          notes?: string | null
+          staff_id?: string
+          status?: string
+          subtotal?: number
+          total?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organisation_settings: {
         Row: {
           id: string
@@ -630,6 +747,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_invoice_number: { Args: never; Returns: string }
       get_user_staff_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
