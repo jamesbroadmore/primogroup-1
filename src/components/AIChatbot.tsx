@@ -132,7 +132,7 @@ export function AIChatbot() {
                   <Bot className="h-4 w-4 text-primary" />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-card-foreground">Carters AI Assistant</p>
+                  <p className="text-sm font-semibold text-card-foreground">Ask Maureen</p>
                   <p className="text-[10px] text-muted-foreground">Policies, procedures & support</p>
                 </div>
               </div>
