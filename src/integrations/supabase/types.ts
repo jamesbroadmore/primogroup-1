@@ -14,7 +14,63 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      shift_checkins: {
+        Row: {
+          check_in_address: string | null
+          check_in_lat: number | null
+          check_in_lng: number | null
+          check_in_time: string | null
+          check_out_address: string | null
+          check_out_lat: number | null
+          check_out_lng: number | null
+          check_out_time: string | null
+          client_name: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          shift_date: string
+          staff_name: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          check_in_address?: string | null
+          check_in_lat?: number | null
+          check_in_lng?: number | null
+          check_in_time?: string | null
+          check_out_address?: string | null
+          check_out_lat?: number | null
+          check_out_lng?: number | null
+          check_out_time?: string | null
+          client_name?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          shift_date?: string
+          staff_name: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          check_in_address?: string | null
+          check_in_lat?: number | null
+          check_in_lng?: number | null
+          check_in_time?: string | null
+          check_out_address?: string | null
+          check_out_lat?: number | null
+          check_out_lng?: number | null
+          check_out_time?: string | null
+          client_name?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          shift_date?: string
+          staff_name?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
