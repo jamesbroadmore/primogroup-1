@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, X } from "lucide-react";
+import { Loader2, X, UserPlus, X as XIcon } from "lucide-react";
 import { z } from "zod";
+import { useAuth } from "@/contexts/AuthContext";
 
 const clientSchema = z.object({
   first_name: z.string().trim().min(1, "First name is required").max(100),
