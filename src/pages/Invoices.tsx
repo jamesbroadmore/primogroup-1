@@ -32,6 +32,7 @@ export default function Invoices() {
   const queryClient = useQueryClient();
   const [showCreate, setShowCreate] = useState(false);
   const [viewInvoice, setViewInvoice] = useState<any>(null);
+  const [editInvoice, setEditInvoice] = useState<any>(null);
 
   const { data: invoices = [], isLoading } = useQuery({
     queryKey: ["invoices"],
