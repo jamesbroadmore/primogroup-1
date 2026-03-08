@@ -508,7 +508,8 @@ function EditUserDialog({ user, onClose, onSuccess }: { user: UserRecord; onClos
           <div>
             <label className="text-xs font-medium text-muted-foreground mb-1.5 block">New Password</label>
             <input
-              type="password"
+              type="text"
+              autoComplete="off"
               value={form.password}
               onChange={(e) => update("password", e.target.value)}
               placeholder="Leave blank to keep current"
