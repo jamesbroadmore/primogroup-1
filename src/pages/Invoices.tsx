@@ -161,6 +161,14 @@ export default function Invoices() {
                             >
                               <Eye className="h-3.5 w-3.5" />
                             </button>
+                            {inv.status === "draft" && (
+                              <button
+                                onClick={() => setEditInvoice(inv)}
+                                className="h-7 px-2 rounded text-xs text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                              >
+                                <Pencil className="h-3.5 w-3.5" />
+                              </button>
+                            )}
                             {inv.status === "draft" && !isAdmin && (
                               <button
                                 onClick={() => submitMutation.mutate(inv.id)}
