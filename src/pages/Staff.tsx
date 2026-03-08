@@ -57,7 +57,9 @@ export default function Staff() {
                 <tbody>
                   {staffData.map((s) => (
                     <tr key={s.id} className="border-b last:border-0 hover:bg-secondary/30 transition-colors">
-                      <td className="px-4 py-3 font-medium text-card-foreground">{s.first_name} {s.last_name}</td>
+                      <td className="px-4 py-3 font-medium text-card-foreground">{s.first_name}</td>
+                      <td className="px-4 py-3 text-card-foreground">{s.last_name}</td>
+                      <td className="px-4 py-3 text-muted-foreground hidden lg:table-cell">{(s as any).preferred_name || "—"}</td>
                       <td className="px-4 py-3 text-muted-foreground capitalize">{s.role.replace("_", " ")}</td>
                       <td className="px-4 py-3 text-muted-foreground hidden md:table-cell capitalize">{s.employment_type.replace("_", " ")}</td>
                       <td className="px-4 py-3 text-muted-foreground hidden md:table-cell">{s.email}</td>

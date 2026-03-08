@@ -107,9 +107,10 @@ export function AddStaffDialog({ open, onClose }: AddStaffDialogProps) {
         </div>
 
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             <Field label="First Name *" value={form.first_name} onChange={(v) => update("first_name", v)} error={errors.first_name} placeholder="Sarah" />
-            <Field label="Last Name *" value={form.last_name} onChange={(v) => update("last_name", v)} error={errors.last_name} placeholder="Mitchell" />
+            <Field label="Surname *" value={form.last_name} onChange={(v) => update("last_name", v)} error={errors.last_name} placeholder="Mitchell" />
+            <Field label="Preferred Name" value={form.preferred_name || ""} onChange={(v) => update("preferred_name", v)} placeholder="Saz" />
           </div>
 
           <Field label="Email *" value={form.email} onChange={(v) => update("email", v)} error={errors.email} placeholder="sarah@example.com" type="email" />

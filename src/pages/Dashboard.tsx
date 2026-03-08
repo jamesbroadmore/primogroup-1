@@ -57,11 +57,11 @@ export default function Dashboard() {
   });
 
   const metrics = [
-    { title: "Active Staff", value: staffCount, change: "", changeType: "neutral" as const, icon: Users, iconColor: "bg-primary/10 text-primary" },
-    { title: "Active Clients", value: clientCount, change: "", changeType: "neutral" as const, icon: UserCircle, iconColor: "bg-info/10 text-info" },
-    { title: "Check-Ins Today", value: todayCheckins, change: "", changeType: "neutral" as const, icon: CalendarDays, iconColor: "bg-warning/10 text-warning" },
-    { title: "Open Incidents", value: openIncidents, change: openIncidents > 0 ? "Requires attention" : "All clear", changeType: openIncidents > 0 ? "negative" as const : "positive" as const, icon: AlertTriangle, iconColor: "bg-destructive/10 text-destructive" },
-    { title: "Compliance Alerts", value: complianceAlerts, change: complianceAlerts > 0 ? "Action needed" : "All current", changeType: complianceAlerts > 0 ? "negative" as const : "positive" as const, icon: ShieldCheck, iconColor: "bg-warning/10 text-warning" },
+    { title: "Active Staff", value: staffCount, change: "", changeType: "neutral" as const, icon: Users, iconColor: "bg-primary/10 text-primary", href: "/staff" },
+    { title: "Active Clients", value: clientCount, change: "", changeType: "neutral" as const, icon: UserCircle, iconColor: "bg-info/10 text-info", href: "/clients" },
+    { title: "Check-Ins Today", value: todayCheckins, change: "", changeType: "neutral" as const, icon: CalendarDays, iconColor: "bg-warning/10 text-warning", href: "/check-in" },
+    { title: "Open Incidents", value: openIncidents, change: openIncidents > 0 ? "Requires attention" : "All clear", changeType: openIncidents > 0 ? "negative" as const : "positive" as const, icon: AlertTriangle, iconColor: "bg-destructive/10 text-destructive", href: "/incidents" },
+    { title: "Compliance Alerts", value: complianceAlerts, change: complianceAlerts > 0 ? "Action needed" : "All current", changeType: complianceAlerts > 0 ? "negative" as const : "positive" as const, icon: ShieldCheck, iconColor: "bg-warning/10 text-warning", href: "/compliance" },
   ];
 
   return (
