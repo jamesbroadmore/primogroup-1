@@ -24,6 +24,7 @@ function getFundingCategory(fundingType: string | null): string {
 }
 
 export default function Clients() {
+  const { isAdmin } = useAuth();
   const queryClient = useQueryClient();
   const [showAdd, setShowAdd] = useState(false);
   const [editClient, setEditClient] = useState<any>(null);
