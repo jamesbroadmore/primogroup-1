@@ -1,10 +1,13 @@
+import { useState } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import { Plus, Search, MoreHorizontal, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { AddClientDialog } from "@/components/AddClientDialog";
 
 export default function Clients() {
+  const [showAdd, setShowAdd] = useState(false);
   const { data: clientsData = [], isLoading } = useQuery({
     queryKey: ["clients"],
     queryFn: async () => {
@@ -22,10 +25,12 @@ export default function Clients() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <input className="w-full h-9 pl-9 pr-3 rounded-lg border bg-card text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" placeholder="Search clients..." />
           </div>
-          <button className="h-9 px-4 rounded-lg bg-primary text-primary-foreground text-sm font-medium flex items-center gap-2 hover:opacity-90 transition-opacity">
+          <button onClick={() => setShowAdd(true)} className="h-9 px-4 rounded-lg bg-primary text-primary-foreground text-sm font-medium flex items-center gap-2 hover:opacity-90 transition-opacity">
             <Plus className="h-4 w-4" /> Add Client
           </button>
         </div>
+
+        <AddClientDialog open={showAdd} onClose={() => setShowAdd(false)} />
 
         {isLoading ? (
           <div className="flex justify-center py-16"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
