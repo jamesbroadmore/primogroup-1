@@ -3,6 +3,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Dashboard from "./pages/Dashboard";
 import Staff from "./pages/Staff";
 import Clients from "./pages/Clients";
@@ -15,33 +17,37 @@ import Compliance from "./pages/Compliance";
 import Financials from "./pages/Financials";
 import Reports from "./pages/Reports";
 import SettingsPage from "./pages/SettingsPage";
+import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/staff" element={<Staff />} />
-          <Route path="/clients" element={<Clients />} />
-          <Route path="/roster" element={<Roster />} />
-          <Route path="/check-in" element={<ShiftCheckIn />} />
-          <Route path="/timesheets" element={<Timesheets />} />
-          <Route path="/case-notes" element={<CaseNotes />} />
-          <Route path="/incidents" element={<Incidents />} />
-          <Route path="/compliance" element={<Compliance />} />
-          <Route path="/financials" element={<Financials />} />
-          <Route path="/reports" element={<Reports />} />
-          <Route path="/settings" element={<SettingsPage />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+    <AuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/staff" element={<ProtectedRoute><Staff /></ProtectedRoute>} />
+            <Route path="/clients" element={<ProtectedRoute><Clients /></ProtectedRoute>} />
+            <Route path="/roster" element={<ProtectedRoute><Roster /></ProtectedRoute>} />
+            <Route path="/check-in" element={<ProtectedRoute><ShiftCheckIn /></ProtectedRoute>} />
+            <Route path="/timesheets" element={<ProtectedRoute><Timesheets /></ProtectedRoute>} />
+            <Route path="/case-notes" element={<ProtectedRoute><CaseNotes /></ProtectedRoute>} />
+            <Route path="/incidents" element={<ProtectedRoute><Incidents /></ProtectedRoute>} />
+            <Route path="/compliance" element={<ProtectedRoute><Compliance /></ProtectedRoute>} />
+            <Route path="/financials" element={<ProtectedRoute><Financials /></ProtectedRoute>} />
+            <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
+            <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 

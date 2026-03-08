@@ -1,36 +1,35 @@
 import { AppLayout } from "@/components/AppLayout";
-import { ShieldCheck, AlertTriangle, CheckCircle, XCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle, XCircle, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
-
-const complianceData = [
-  { staff: "Sarah Mitchell", policeCheck: "Valid", ndisScreen: "Valid", firstAid: "Valid", manualHandling: "Valid" },
-  { staff: "James Robertson", policeCheck: "Valid", ndisScreen: "Valid", firstAid: "Valid", manualHandling: "Expiring" },
-  { staff: "Emily Watson", policeCheck: "Valid", ndisScreen: "Valid", firstAid: "Valid", manualHandling: "Valid" },
-  { staff: "David Lee", policeCheck: "Expiring", ndisScreen: "Valid", firstAid: "Expired", manualHandling: "Valid" },
-  { staff: "Priya Sharma", policeCheck: "Valid", ndisScreen: "Valid", firstAid: "Valid", manualHandling: "Valid" },
-  { staff: "Tom Andrews", policeCheck: "Expired", ndisScreen: "Expired", firstAid: "Expired", manualHandling: "Expired" },
-];
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 function StatusBadge({ status }: { status: string }) {
-  const styles = status === "Valid" ? "bg-success/10 text-success" :
-    status === "Expiring" ? "bg-warning/10 text-warning" : "bg-destructive/10 text-destructive";
-  const Icon = status === "Valid" ? CheckCircle : status === "Expiring" ? AlertTriangle : XCircle;
+  const styles = status === "current" ? "bg-success/10 text-success" :
+    status === "expiring_soon" ? "bg-warning/10 text-warning" : "bg-destructive/10 text-destructive";
+  const Icon = status === "current" ? CheckCircle : status === "expiring_soon" ? AlertTriangle : XCircle;
+  const label = status === "current" ? "Valid" : status === "expiring_soon" ? "Expiring" : status === "expired" ? "Expired" : status;
   return (
     <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${styles}`}>
-      <Icon className="h-3 w-3" />{status}
+      <Icon className="h-3 w-3" />{label}
     </span>
   );
 }
 
 export default function Compliance() {
-  const alerts = complianceData.flatMap(s =>
-    [
-      s.policeCheck !== "Valid" && `${s.staff}: Police Check ${s.policeCheck}`,
-      s.firstAid !== "Valid" && `${s.staff}: First Aid ${s.firstAid}`,
-      s.ndisScreen !== "Valid" && `${s.staff}: NDIS Screening ${s.ndisScreen}`,
-      s.manualHandling !== "Valid" && `${s.staff}: Manual Handling ${s.manualHandling}`,
-    ].filter(Boolean)
-  );
+  const { data: records = [], isLoading } = useQuery({
+    queryKey: ["compliance"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("compliance_records")
+        .select("*, staff:staff_id(first_name, last_name)")
+        .order("expiry_date", { ascending: true });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const alerts = records.filter((r: any) => r.status === "expiring_soon" || r.status === "expired");
 
   return (
     <AppLayout title="Compliance">
@@ -42,37 +41,51 @@ export default function Compliance() {
               <h3 className="text-sm font-semibold text-warning">{alerts.length} Compliance Alert{alerts.length > 1 ? "s" : ""}</h3>
             </div>
             <ul className="space-y-1">
-              {alerts.map((a, i) => <li key={i} className="text-xs text-warning/80">• {a}</li>)}
+              {alerts.map((a: any) => (
+                <li key={a.id} className="text-xs text-warning/80">
+                  • {a.staff ? `${a.staff.first_name} ${a.staff.last_name}` : "Unknown"}: {a.record_name} — {a.status === "expired" ? "Expired" : "Expiring soon"}
+                </li>
+              ))}
             </ul>
           </motion.div>
         )}
 
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="rounded-xl bg-card shadow-card border border-border/50 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b bg-secondary/50">
-                  <th className="text-left px-4 py-3 font-medium text-muted-foreground">Staff</th>
-                  <th className="text-left px-4 py-3 font-medium text-muted-foreground">Police Check</th>
-                  <th className="text-left px-4 py-3 font-medium text-muted-foreground">NDIS Screening</th>
-                  <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden md:table-cell">First Aid</th>
-                  <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden md:table-cell">Manual Handling</th>
-                </tr>
-              </thead>
-              <tbody>
-                {complianceData.map((s, i) => (
-                  <tr key={i} className="border-b last:border-0 hover:bg-secondary/30 transition-colors">
-                    <td className="px-4 py-3 font-medium text-card-foreground">{s.staff}</td>
-                    <td className="px-4 py-3"><StatusBadge status={s.policeCheck} /></td>
-                    <td className="px-4 py-3"><StatusBadge status={s.ndisScreen} /></td>
-                    <td className="px-4 py-3 hidden md:table-cell"><StatusBadge status={s.firstAid} /></td>
-                    <td className="px-4 py-3 hidden md:table-cell"><StatusBadge status={s.manualHandling} /></td>
+        {isLoading ? (
+          <div className="flex justify-center py-16"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+        ) : records.length === 0 ? (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="rounded-xl bg-card p-12 shadow-card border border-border/50 text-center">
+            <p className="text-muted-foreground text-sm">No compliance records yet. Add staff and their certifications to track compliance.</p>
+          </motion.div>
+        ) : (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="rounded-xl bg-card shadow-card border border-border/50 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b bg-secondary/50">
+                    <th className="text-left px-4 py-3 font-medium text-muted-foreground">Staff</th>
+                    <th className="text-left px-4 py-3 font-medium text-muted-foreground">Record</th>
+                    <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden md:table-cell">Type</th>
+                    <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden md:table-cell">Expiry</th>
+                    <th className="text-left px-4 py-3 font-medium text-muted-foreground">Status</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </motion.div>
+                </thead>
+                <tbody>
+                  {records.map((r: any) => (
+                    <tr key={r.id} className="border-b last:border-0 hover:bg-secondary/30 transition-colors">
+                      <td className="px-4 py-3 font-medium text-card-foreground">
+                        {r.staff ? `${r.staff.first_name} ${r.staff.last_name}` : "—"}
+                      </td>
+                      <td className="px-4 py-3 text-muted-foreground">{r.record_name}</td>
+                      <td className="px-4 py-3 text-muted-foreground hidden md:table-cell capitalize">{r.record_type.replace("_", " ")}</td>
+                      <td className="px-4 py-3 text-muted-foreground hidden md:table-cell">{r.expiry_date || "N/A"}</td>
+                      <td className="px-4 py-3"><StatusBadge status={r.status} /></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </motion.div>
+        )}
       </div>
     </AppLayout>
   );

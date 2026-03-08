@@ -14,6 +14,293 @@ export type Database = {
   }
   public: {
     Tables: {
+      case_notes: {
+        Row: {
+          category: string | null
+          client_id: string
+          content: string
+          created_at: string
+          id: string
+          is_confidential: boolean | null
+          note_date: string
+          staff_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          client_id: string
+          content: string
+          created_at?: string
+          id?: string
+          is_confidential?: boolean | null
+          note_date?: string
+          staff_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          client_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          is_confidential?: boolean | null
+          note_date?: string
+          staff_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_notes_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "case_notes_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clients: {
+        Row: {
+          address: string | null
+          created_at: string
+          date_of_birth: string | null
+          email: string | null
+          emergency_contact_name: string | null
+          emergency_contact_phone: string | null
+          emergency_contact_relationship: string | null
+          first_name: string
+          funding_type: string | null
+          id: string
+          last_name: string
+          ndis_number: string | null
+          ndis_plan_end: string | null
+          ndis_plan_start: string | null
+          notes: string | null
+          phone: string | null
+          primary_disability: string | null
+          status: string
+          support_needs: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          email?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          emergency_contact_relationship?: string | null
+          first_name: string
+          funding_type?: string | null
+          id?: string
+          last_name: string
+          ndis_number?: string | null
+          ndis_plan_end?: string | null
+          ndis_plan_start?: string | null
+          notes?: string | null
+          phone?: string | null
+          primary_disability?: string | null
+          status?: string
+          support_needs?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          email?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          emergency_contact_relationship?: string | null
+          first_name?: string
+          funding_type?: string | null
+          id?: string
+          last_name?: string
+          ndis_number?: string | null
+          ndis_plan_end?: string | null
+          ndis_plan_start?: string | null
+          notes?: string | null
+          phone?: string | null
+          primary_disability?: string | null
+          status?: string
+          support_needs?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      compliance_records: {
+        Row: {
+          created_at: string
+          document_url: string | null
+          expiry_date: string | null
+          id: string
+          issue_date: string | null
+          notes: string | null
+          record_name: string
+          record_type: string
+          staff_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          document_url?: string | null
+          expiry_date?: string | null
+          id?: string
+          issue_date?: string | null
+          notes?: string | null
+          record_name: string
+          record_type: string
+          staff_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          document_url?: string | null
+          expiry_date?: string | null
+          id?: string
+          issue_date?: string | null
+          notes?: string | null
+          record_name?: string
+          record_type?: string
+          staff_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compliance_records_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      incidents: {
+        Row: {
+          client_id: string | null
+          created_at: string
+          description: string
+          follow_up_notes: string | null
+          follow_up_required: boolean | null
+          id: string
+          immediate_action: string | null
+          incident_date: string
+          incident_type: string
+          location: string | null
+          reported_by: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string
+          description: string
+          follow_up_notes?: string | null
+          follow_up_required?: boolean | null
+          id?: string
+          immediate_action?: string | null
+          incident_date: string
+          incident_type: string
+          location?: string | null
+          reported_by?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string
+          description?: string
+          follow_up_notes?: string | null
+          follow_up_required?: boolean | null
+          id?: string
+          immediate_action?: string | null
+          incident_date?: string
+          incident_type?: string
+          location?: string | null
+          reported_by?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "incidents_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incidents_reported_by_fkey"
+            columns: ["reported_by"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incidents_resolved_by_fkey"
+            columns: ["resolved_by"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          id: string
+          staff_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          staff_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          staff_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       shift_checkins: {
         Row: {
           check_in_address: string | null
@@ -29,6 +316,7 @@ export type Database = {
           id: string
           notes: string | null
           shift_date: string
+          staff_id: string | null
           staff_name: string
           status: string
           updated_at: string
@@ -47,6 +335,7 @@ export type Database = {
           id?: string
           notes?: string | null
           shift_date?: string
+          staff_id?: string | null
           staff_name: string
           status?: string
           updated_at?: string
@@ -65,9 +354,175 @@ export type Database = {
           id?: string
           notes?: string | null
           shift_date?: string
+          staff_id?: string | null
           staff_name?: string
           status?: string
           updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shift_checkins_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      staff: {
+        Row: {
+          address: string | null
+          created_at: string
+          date_of_birth: string | null
+          email: string
+          emergency_contact_name: string | null
+          emergency_contact_phone: string | null
+          employment_type: string
+          first_name: string
+          id: string
+          last_name: string
+          notes: string | null
+          phone: string | null
+          qualifications: string[] | null
+          role: string
+          start_date: string | null
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          email: string
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          employment_type?: string
+          first_name: string
+          id?: string
+          last_name: string
+          notes?: string | null
+          phone?: string | null
+          qualifications?: string[] | null
+          role?: string
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          email?: string
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          employment_type?: string
+          first_name?: string
+          id?: string
+          last_name?: string
+          notes?: string | null
+          phone?: string | null
+          qualifications?: string[] | null
+          role?: string
+          start_date?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      timesheets: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          break_minutes: number | null
+          client_id: string | null
+          created_at: string
+          end_time: string | null
+          id: string
+          notes: string | null
+          rate_per_hour: number | null
+          shift_date: string
+          staff_id: string
+          start_time: string
+          status: string
+          total_hours: number | null
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          break_minutes?: number | null
+          client_id?: string | null
+          created_at?: string
+          end_time?: string | null
+          id?: string
+          notes?: string | null
+          rate_per_hour?: number | null
+          shift_date: string
+          staff_id: string
+          start_time: string
+          status?: string
+          total_hours?: number | null
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          break_minutes?: number | null
+          client_id?: string | null
+          created_at?: string
+          end_time?: string | null
+          id?: string
+          notes?: string | null
+          rate_per_hour?: number | null
+          shift_date?: string
+          staff_id?: string
+          start_time?: string
+          status?: string
+          total_hours?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "timesheets_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "timesheets_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "timesheets_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
         }
         Relationships: []
       }
@@ -76,10 +531,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -206,6 +667,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "moderator", "user"],
+    },
   },
 } as const

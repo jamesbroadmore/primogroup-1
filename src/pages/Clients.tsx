@@ -1,16 +1,19 @@
 import { AppLayout } from "@/components/AppLayout";
-import { Plus, Search, MoreHorizontal } from "lucide-react";
+import { Plus, Search, MoreHorizontal, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
-
-const clientsData = [
-  { name: "Maria Torres", ndis: "431 234 567", plan: "Core + Capacity", funding: "$42,500", workers: 2 },
-  { name: "Robert Kim", ndis: "431 345 678", plan: "Core Support", funding: "$28,000", workers: 1 },
-  { name: "Helen Smith", ndis: "431 456 789", plan: "Core + CB Daily", funding: "$55,200", workers: 3 },
-  { name: "Frank Pearson", ndis: "431 567 890", plan: "Capacity Building", funding: "$18,750", workers: 1 },
-  { name: "Linda Chen", ndis: "431 678 901", plan: "Core Support", funding: "$31,400", workers: 2 },
-];
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Clients() {
+  const { data: clientsData = [], isLoading } = useQuery({
+    queryKey: ["clients"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("clients").select("*").order("first_name");
+      if (error) throw error;
+      return data;
+    },
+  });
+
   return (
     <AppLayout title="Client Management">
       <div className="space-y-4">
@@ -24,30 +27,38 @@ export default function Clients() {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {clientsData.map((c, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
-              className="rounded-xl bg-card p-5 shadow-card border border-border/50"
-            >
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <h3 className="text-sm font-semibold text-card-foreground">{c.name}</h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">NDIS: {c.ndis}</p>
+        {isLoading ? (
+          <div className="flex justify-center py-16"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+        ) : clientsData.length === 0 ? (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="rounded-xl bg-card p-12 shadow-card border border-border/50 text-center">
+            <p className="text-muted-foreground text-sm">No clients yet. Click "Add Client" to get started.</p>
+          </motion.div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {clientsData.map((c, i) => (
+              <motion.div
+                key={c.id}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05 }}
+                className="rounded-xl bg-card p-5 shadow-card border border-border/50"
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    <h3 className="text-sm font-semibold text-card-foreground">{c.first_name} {c.last_name}</h3>
+                    {c.ndis_number && <p className="text-xs text-muted-foreground mt-0.5">NDIS: {c.ndis_number}</p>}
+                  </div>
+                  <button className="text-muted-foreground hover:text-foreground"><MoreHorizontal className="h-4 w-4" /></button>
                 </div>
-                <button className="text-muted-foreground hover:text-foreground"><MoreHorizontal className="h-4 w-4" /></button>
-              </div>
-              <div className="space-y-2 text-xs">
-                <div className="flex justify-between"><span className="text-muted-foreground">Plan</span><span className="text-card-foreground font-medium">{c.plan}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">Funding</span><span className="text-card-foreground font-medium">{c.funding}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">Workers</span><span className="text-card-foreground font-medium">{c.workers} assigned</span></div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+                <div className="space-y-2 text-xs">
+                  <div className="flex justify-between"><span className="text-muted-foreground">Status</span><span className="text-card-foreground font-medium capitalize">{c.status}</span></div>
+                  {c.funding_type && <div className="flex justify-between"><span className="text-muted-foreground">Funding</span><span className="text-card-foreground font-medium uppercase">{c.funding_type}</span></div>}
+                  {c.phone && <div className="flex justify-between"><span className="text-muted-foreground">Phone</span><span className="text-card-foreground font-medium">{c.phone}</span></div>}
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
       </div>
     </AppLayout>
   );
