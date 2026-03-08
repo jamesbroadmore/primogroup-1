@@ -1,0 +1,2 @@
+ALTER TABLE public.clients DROP CONSTRAINT clients_funding_type_check;
+ALTER TABLE public.clients ADD CONSTRAINT clients_funding_type_check CHECK (funding_type = ANY (ARRAY['ndis'::text, 'aged_care'::text, 'home_care'::text, 'chsp'::text, 'hvp'::text, 'private'::text, 'other'::text]));
