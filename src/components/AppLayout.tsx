@@ -1,4 +1,5 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AIChatbot } from "@/components/AIChatbot";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Bell, Search, AlertTriangle, ShieldCheck, Clock, X } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
