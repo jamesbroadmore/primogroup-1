@@ -1,10 +1,13 @@
+import { useState } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import { Plus, Search, MoreHorizontal, CheckCircle, XCircle, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { AddStaffDialog } from "@/components/AddStaffDialog";
 
 export default function Staff() {
+  const [showAdd, setShowAdd] = useState(false);
   const { data: staffData = [], isLoading } = useQuery({
     queryKey: ["staff"],
     queryFn: async () => {
