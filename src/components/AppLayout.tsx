@@ -167,6 +167,7 @@ export function AppLayout({ children, title }: AppLayoutProps) {
             {children}
           </main>
         </div>
+        <AIChatbot />
       </div>
     </SidebarProvider>
   );
