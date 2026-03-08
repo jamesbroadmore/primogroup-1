@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { AppLayout } from "@/components/AppLayout";
-import { Plus, FileText, Loader2, CheckCircle, Clock, Send, Eye } from "lucide-react";
+import { Plus, FileText, Loader2, CheckCircle, Clock, Send, Eye, Pencil } from "lucide-react";
 import { motion } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { CreateInvoiceDialog } from "@/components/invoices/CreateInvoiceDialog";
 import { ViewInvoiceDialog } from "@/components/invoices/ViewInvoiceDialog";
+import { EditInvoiceDialog } from "@/components/invoices/EditInvoiceDialog";
 
 const STATUS_STYLES: Record<string, string> = {
   draft: "bg-muted text-muted-foreground",
