@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format, startOfWeek, endOfWeek, addWeeks, addDays } from "date-fns";
 import { NewRosterDialog } from "@/components/roster/NewRosterDialog";
+import { EditShiftDialog } from "@/components/roster/EditShiftDialog";
 
 const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const hours = Array.from({ length: 14 }, (_, i) => i + 6);
