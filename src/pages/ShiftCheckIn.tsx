@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
@@ -11,7 +12,6 @@ import {
   LogOut,
   Navigation,
   CheckCircle2,
-  AlertCircle,
   Loader2,
   History,
 } from "lucide-react";
@@ -55,19 +55,41 @@ function useGps() {
   return { position, error, loading, requestLocation };
 }
 
+function useStaffProfile() {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["my-staff-profile", user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("staff_id, display_name")
+        .eq("user_id", user.id)
+        .single();
+      if (!profile?.staff_id) return { staffId: null, staffName: profile?.display_name || user.email || "Unknown" };
+      const { data: staff } = await supabase
+        .from("staff")
+        .select("id, first_name, last_name")
+        .eq("id", profile.staff_id)
+        .single();
+      if (!staff) return { staffId: profile.staff_id, staffName: profile.display_name || user.email || "Unknown" };
+      return { staffId: staff.id, staffName: `${staff.first_name} ${staff.last_name}` };
+    },
+    enabled: !!user,
+  });
+}
+
 export default function ShiftCheckIn() {
   const queryClient = useQueryClient();
   const { position, error: gpsError, loading: gpsLoading, requestLocation } = useGps();
-  const [staffName, setStaffName] = useState("");
+  const { data: staffProfile, isLoading: staffLoading } = useStaffProfile();
   const [clientName, setClientName] = useState("");
   const [notes, setNotes] = useState("");
 
-  // Request GPS on mount
   useEffect(() => {
     requestLocation();
   }, [requestLocation]);
 
-  // Fetch today's check-ins
   const { data: todayCheckins = [], isLoading } = useQuery({
     queryKey: ["shift-checkins-today"],
     queryFn: async () => {
@@ -83,7 +105,6 @@ export default function ShiftCheckIn() {
     refetchInterval: 30000,
   });
 
-  // Fetch recent history
   const { data: recentHistory = [] } = useQuery({
     queryKey: ["shift-checkins-history"],
     queryFn: async () => {
@@ -97,17 +118,18 @@ export default function ShiftCheckIn() {
     },
   });
 
-  // Active check-in (not yet checked out)
   const activeCheckin = todayCheckins.find((c: any) => c.status === "checked_in");
 
-  // Clock In
   const clockIn = useMutation({
     mutationFn: async () => {
-      if (!staffName.trim()) throw new Error("Please enter your name");
+      if (!staffProfile?.staffId) throw new Error("Your account is not linked to a staff record. Contact your administrator.");
       if (!position) throw new Error("GPS location required. Please enable location access.");
+      if (clientName.length > 200) throw new Error("Client name is too long.");
+      if (notes.length > 1000) throw new Error("Notes are too long.");
 
       const { error } = await supabase.from("shift_checkins").insert({
-        staff_name: staffName.trim(),
+        staff_id: staffProfile.staffId,
+        staff_name: staffProfile.staffName,
         client_name: clientName.trim() || null,
         check_in_time: new Date().toISOString(),
         check_in_lat: position.lat,
@@ -122,11 +144,11 @@ export default function ShiftCheckIn() {
       queryClient.invalidateQueries({ queryKey: ["shift-checkins-today"] });
       queryClient.invalidateQueries({ queryKey: ["shift-checkins-history"] });
       setNotes("");
+      setClientName("");
     },
     onError: (err: Error) => toast.error(err.message),
   });
 
-  // Clock Out
   const clockOut = useMutation({
     mutationFn: async () => {
       if (!activeCheckin) throw new Error("No active check-in found");
@@ -150,6 +172,8 @@ export default function ShiftCheckIn() {
     },
     onError: (err: Error) => toast.error(err.message),
   });
+
+  const canClockIn = !!position && !!staffProfile?.staffId && !staffLoading;
 
   return (
     <AppLayout title="Shift Check-In">
@@ -187,6 +211,29 @@ export default function ShiftCheckIn() {
           </div>
         </motion.div>
 
+        {/* Staff Identity Banner */}
+        {staffProfile && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.03 }}
+            className={`rounded-xl p-4 border ${
+              staffProfile.staffId
+                ? "bg-card border-border/50"
+                : "bg-destructive/5 border-destructive/20"
+            }`}
+          >
+            <p className="text-sm font-medium text-card-foreground">
+              Signed in as: <span className="font-semibold">{staffProfile.staffName}</span>
+            </p>
+            {!staffProfile.staffId && (
+              <p className="text-xs text-destructive mt-1">
+                Your account is not linked to a staff record. Contact your administrator to enable clock-in.
+              </p>
+            )}
+          </motion.div>
+        )}
+
         {/* Check-In / Check-Out Card */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
@@ -195,7 +242,6 @@ export default function ShiftCheckIn() {
           className="rounded-xl bg-card p-6 shadow-card border border-border/50"
         >
           {activeCheckin ? (
-            /* Active shift — show clock out */
             <div className="space-y-5">
               <div className="flex items-center gap-3">
                 <div className="h-12 w-12 rounded-full bg-success/10 flex items-center justify-center">
@@ -238,7 +284,6 @@ export default function ShiftCheckIn() {
               </button>
             </div>
           ) : (
-            /* No active shift — show clock in form */
             <div className="space-y-4">
               <h2 className="text-lg font-semibold text-card-foreground flex items-center gap-2">
                 <Clock className="h-5 w-5 text-primary" />
@@ -247,22 +292,13 @@ export default function ShiftCheckIn() {
 
               <div className="space-y-3">
                 <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-1 block">Your Name *</label>
-                  <input
-                    type="text"
-                    value={staffName}
-                    onChange={(e) => setStaffName(e.target.value)}
-                    placeholder="e.g. Sarah Mitchell"
-                    className="w-full h-10 rounded-lg border bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                  />
-                </div>
-                <div>
                   <label className="text-xs font-medium text-muted-foreground mb-1 block">Client Name</label>
                   <input
                     type="text"
                     value={clientName}
                     onChange={(e) => setClientName(e.target.value)}
                     placeholder="e.g. Maria Thompson"
+                    maxLength={200}
                     className="w-full h-10 rounded-lg border bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                   />
                 </div>
@@ -273,6 +309,7 @@ export default function ShiftCheckIn() {
                     onChange={(e) => setNotes(e.target.value)}
                     placeholder="Any notes for this shift..."
                     rows={2}
+                    maxLength={1000}
                     className="w-full rounded-lg border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
                   />
                 </div>
@@ -280,7 +317,7 @@ export default function ShiftCheckIn() {
 
               <button
                 onClick={() => clockIn.mutate()}
-                disabled={clockIn.isPending || !position || !staffName.trim()}
+                disabled={clockIn.isPending || !canClockIn}
                 className="w-full h-14 rounded-xl bg-primary text-primary-foreground text-lg font-semibold flex items-center justify-center gap-3 hover:opacity-90 transition-opacity disabled:opacity-50"
               >
                 {clockIn.isPending ? (
