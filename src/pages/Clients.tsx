@@ -120,9 +120,11 @@ export default function Clients() {
               placeholder="Search clients..."
             />
           </div>
-          <button onClick={() => setShowAdd(true)} className="h-9 px-4 rounded-lg bg-primary text-primary-foreground text-sm font-medium flex items-center gap-2 hover:opacity-90 transition-opacity">
-            <Plus className="h-4 w-4" /> Add Client
-          </button>
+          {isAdmin && (
+            <button onClick={() => setShowAdd(true)} className="h-9 px-4 rounded-lg bg-primary text-primary-foreground text-sm font-medium flex items-center gap-2 hover:opacity-90 transition-opacity">
+              <Plus className="h-4 w-4" /> Add Client
+            </button>
+          )}
         </div>
 
         <AddClientDialog open={showAdd} onClose={() => setShowAdd(false)} />
