@@ -75,7 +75,8 @@ export default function Roster() {
         (d) => format(d, "yyyy-MM-dd") === t.shift_date
       );
       if (dayIdx < 0) return;
-      const startHour = t.start_time ? new Date(t.start_time).getHours() : null;
+      // Parse hour directly from the ISO string to avoid timezone conversion issues
+      const startHour = t.start_time ? parseInt(t.start_time.substring(11, 13), 10) : null;
       if (startHour === null) return;
       const key = `${dayIdx}-${startHour}`;
       if (!map[key]) map[key] = [];
