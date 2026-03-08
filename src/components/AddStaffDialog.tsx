@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, X } from "lucide-react";
+import { Loader2, X, KeyRound, Eye, EyeOff } from "lucide-react";
 import { z } from "zod";
 
 const staffSchema = z.object({
@@ -18,7 +18,14 @@ const staffSchema = z.object({
   emergency_contact_name: z.string().trim().max(100).optional(),
   emergency_contact_phone: z.string().trim().max(20).optional(),
   notes: z.string().trim().max(2000).optional(),
-});
+  // User access fields
+  create_account: z.boolean(),
+  password: z.string().min(8, "Password must be at least 8 characters").optional(),
+  system_role: z.enum(["admin", "moderator", "user"]).optional(),
+}).refine((data) => {
+  if (data.create_account && !data.password) return false;
+  return true;
+}, { message: "Password is required when creating an account", path: ["password"] });
 
 type StaffForm = z.infer<typeof staffSchema>;
 
@@ -35,6 +42,9 @@ const emptyForm: StaffForm = {
   emergency_contact_name: "",
   emergency_contact_phone: "",
   notes: "",
+  create_account: false,
+  password: "",
+  system_role: "user",
 };
 
 interface AddStaffDialogProps {
@@ -46,10 +56,12 @@ export function AddStaffDialog({ open, onClose }: AddStaffDialogProps) {
   const queryClient = useQueryClient();
   const [form, setForm] = useState<StaffForm>(emptyForm);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showPassword, setShowPassword] = useState(false);
 
   const mutation = useMutation({
     mutationFn: async (data: StaffForm) => {
-      const { error } = await supabase.from("staff").insert({
+      // 1. Create staff record
+      const { data: staffRecord, error } = await supabase.from("staff").insert({
         first_name: data.first_name,
         last_name: data.last_name,
         preferred_name: data.preferred_name || null,
@@ -62,8 +74,24 @@ export function AddStaffDialog({ open, onClose }: AddStaffDialogProps) {
         emergency_contact_name: data.emergency_contact_name || null,
         emergency_contact_phone: data.emergency_contact_phone || null,
         notes: data.notes || null,
-      });
+      }).select("id").single();
       if (error) throw error;
+
+      // 2. Create user account if requested
+      if (data.create_account && data.password) {
+        const { data: result, error: fnError } = await supabase.functions.invoke("manage-users", {
+          body: {
+            action: "invite",
+            email: data.email,
+            password: data.password,
+            display_name: `${data.first_name} ${data.last_name}`,
+            role: data.system_role || "user",
+            staff_id: staffRecord.id,
+          },
+        });
+        if (fnError) throw fnError;
+        if (result?.error) throw new Error(result.error);
+      }
     },
     onSuccess: () => {
       toast.success("Staff member added successfully!");
@@ -91,9 +119,9 @@ export function AddStaffDialog({ open, onClose }: AddStaffDialogProps) {
     mutation.mutate(result.data);
   };
 
-  const update = (field: keyof StaffForm, value: string) => {
+  const update = (field: keyof StaffForm, value: string | boolean) => {
     setForm((prev) => ({ ...prev, [field]: value }));
-    if (errors[field]) setErrors((prev) => ({ ...prev, [field]: "" }));
+    if (errors[field as string]) setErrors((prev) => ({ ...prev, [field]: "" }));
   };
 
   if (!open) return null;
@@ -150,6 +178,57 @@ export function AddStaffDialog({ open, onClose }: AddStaffDialogProps) {
               rows={2}
               className="w-full rounded-lg border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
             />
+          </div>
+
+          {/* User Access Section */}
+          <div className="border-t pt-4">
+            <div className="flex items-center gap-2 mb-3">
+              <KeyRound className="h-4 w-4 text-primary" />
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">System Access</p>
+            </div>
+
+            <label className="flex items-center gap-3 cursor-pointer mb-3">
+              <input
+                type="checkbox"
+                checked={form.create_account}
+                onChange={(e) => update("create_account", e.target.checked)}
+                className="h-4 w-4 rounded border-border text-primary focus:ring-ring"
+              />
+              <span className="text-sm text-card-foreground">Create login account for this staff member</span>
+            </label>
+
+            {form.create_account && (
+              <div className="space-y-3 pl-7">
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Password *</label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={form.password || ""}
+                      onChange={(e) => update("password", e.target.value)}
+                      placeholder="Min 8 characters"
+                      className={`w-full h-9 rounded-lg border bg-background px-3 pr-9 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring ${errors.password ? "border-destructive" : ""}`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                  {errors.password && <p className="text-xs text-destructive mt-1">{errors.password}</p>}
+                </div>
+                <SelectField label="System Role" value={form.system_role || "user"} onChange={(v) => update("system_role", v)} options={[
+                  { value: "user", label: "User (Staff)" },
+                  { value: "moderator", label: "Moderator" },
+                  { value: "admin", label: "Admin" },
+                ]} />
+                <p className="text-[11px] text-muted-foreground">
+                  The staff member will use their email and this password to log in.
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="flex justify-end gap-2 pt-2">
