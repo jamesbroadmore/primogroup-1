@@ -34,6 +34,15 @@ export default function Dashboard() {
       return profile?.display_name || user!.email?.split("@")[0] || "there";
     },
   });
+
+  // Western Australia is UTC+8 (AWST)
+  const getTimeGreeting = () => {
+    const now = new Date();
+    const waHour = new Date(now.toLocaleString("en-US", { timeZone: "Australia/Perth" })).getHours();
+    if (waHour < 12) return "Good Morning";
+    if (waHour < 17) return "Good Afternoon";
+    return "Good Evening";
+  };
   const { data: staffCount = 0 } = useQuery({
     queryKey: ["dashboard-staff-count"],
     queryFn: async () => {
@@ -99,7 +108,7 @@ export default function Dashboard() {
           animate={{ opacity: 1, y: 0 }}
           className="text-xl font-semibold text-foreground"
         >
-          Hello, {greeting ?? "..."}
+          {getTimeGreeting()}, {greeting ?? "..."}
         </motion.h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
