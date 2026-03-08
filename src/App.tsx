@@ -18,6 +18,7 @@ import Financials from "./pages/Financials";
 import Reports from "./pages/Reports";
 import SettingsPage from "./pages/SettingsPage";
 import Onboarding from "./pages/Onboarding";
+import MyCompliance from "./pages/MyCompliance";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
