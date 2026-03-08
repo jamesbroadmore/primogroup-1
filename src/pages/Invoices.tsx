@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { AppLayout } from "@/components/AppLayout";
-import { Plus, FileText, Loader2, CheckCircle, Clock, Send, Eye } from "lucide-react";
+import { Plus, FileText, Loader2, CheckCircle, Clock, Send, Eye, Pencil } from "lucide-react";
 import { motion } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { CreateInvoiceDialog } from "@/components/invoices/CreateInvoiceDialog";
 import { ViewInvoiceDialog } from "@/components/invoices/ViewInvoiceDialog";
+import { EditInvoiceDialog } from "@/components/invoices/EditInvoiceDialog";
 
 const STATUS_STYLES: Record<string, string> = {
   draft: "bg-muted text-muted-foreground",
@@ -31,6 +32,7 @@ export default function Invoices() {
   const queryClient = useQueryClient();
   const [showCreate, setShowCreate] = useState(false);
   const [viewInvoice, setViewInvoice] = useState<any>(null);
+  const [editInvoice, setEditInvoice] = useState<any>(null);
 
   const { data: invoices = [], isLoading } = useQuery({
     queryKey: ["invoices"],
@@ -88,6 +90,13 @@ export default function Invoices() {
         </div>
 
         <CreateInvoiceDialog open={showCreate} onClose={() => setShowCreate(false)} />
+        {editInvoice && (
+          <EditInvoiceDialog
+            open={!!editInvoice}
+            onClose={() => setEditInvoice(null)}
+            invoiceId={editInvoice.id}
+          />
+        )}
         {viewInvoice && (
           <ViewInvoiceDialog
             open={!!viewInvoice}
@@ -152,6 +161,14 @@ export default function Invoices() {
                             >
                               <Eye className="h-3.5 w-3.5" />
                             </button>
+                            {inv.status === "draft" && (
+                              <button
+                                onClick={() => setEditInvoice(inv)}
+                                className="h-7 px-2 rounded text-xs text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                              >
+                                <Pencil className="h-3.5 w-3.5" />
+                              </button>
+                            )}
                             {inv.status === "draft" && !isAdmin && (
                               <button
                                 onClick={() => submitMutation.mutate(inv.id)}
