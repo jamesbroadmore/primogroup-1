@@ -1,6 +1,7 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { Bell, Search } from "lucide-react";
+import cartersIcon from "@/assets/icon.png";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -28,6 +29,7 @@ export function AppLayout({ children, title }: AppLayoutProps) {
                 <Bell className="h-4 w-4" />
                 <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-destructive" />
               </button>
+              <img src={cartersIcon} alt="Carters Care Group" className="h-7 w-7 ml-1 md:hidden" />
             </div>
           </header>
           <main className="flex-1 overflow-auto p-4 md:p-6">
