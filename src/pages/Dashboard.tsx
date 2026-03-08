@@ -90,7 +90,7 @@ export default function Dashboard() {
                 <div key={c.id} className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-secondary/50">
                   <div>
                     <p className="text-sm font-medium text-card-foreground">{c.staff_name}</p>
-                    <p className="text-xs text-muted-foreground">{c.client_name || "No client"} · {new Date(c.check_in_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</p>
+                    <p className="text-xs text-muted-foreground">{c.client_name || "No client"} · {c.check_in_time ? new Date(c.check_in_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—"}</p>
                   </div>
                   <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${
                     c.status === "checked_in" ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"

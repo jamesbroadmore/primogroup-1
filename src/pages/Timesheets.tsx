@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
+import { toast } from "sonner";
 
 export default function Timesheets() {
   const { data: timesheets = [], isLoading } = useQuery({
@@ -19,12 +20,42 @@ export default function Timesheets() {
     },
   });
 
+  const handleExport = () => {
+    if (timesheets.length === 0) {
+      toast.info("No timesheets to export");
+      return;
+    }
+    const headers = ["Staff", "Client", "Date", "Start", "End", "Hours", "Break (min)", "Status"];
+    const rows = timesheets.map((t: any) => [
+      t.staff ? `${t.staff.first_name} ${t.staff.last_name}` : "",
+      t.client ? `${t.client.first_name} ${t.client.last_name}` : "",
+      t.shift_date,
+      t.start_time ? format(new Date(t.start_time), "HH:mm") : "",
+      t.end_time ? format(new Date(t.end_time), "HH:mm") : "",
+      t.total_hours ?? "",
+      t.break_minutes ?? 0,
+      t.status,
+    ]);
+    const csv = [headers.join(","), ...rows.map(r => r.map(v => `"${v}"`).join(","))].join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `timesheets_${new Date().toISOString().split("T")[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("Timesheets exported");
+  };
+
   return (
     <AppLayout title="Timesheets">
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">{timesheets.length} timesheet entries</p>
-          <button className="h-9 px-4 rounded-lg border bg-card text-sm font-medium text-foreground flex items-center gap-2 hover:bg-secondary transition-colors">
+          <button
+            onClick={handleExport}
+            className="h-9 px-4 rounded-lg border bg-card text-sm font-medium text-foreground flex items-center gap-2 hover:bg-secondary transition-colors"
+          >
             <Download className="h-4 w-4" /> Export CSV
           </button>
         </div>
