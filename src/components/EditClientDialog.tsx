@@ -274,6 +274,47 @@ export function EditClientDialog({ open, onClose, client }: EditClientDialogProp
             />
           </div>
 
+          {/* Assigned Staff Section */}
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider pt-2">Assigned Staff</p>
+          {currentAssignments.length > 0 ? (
+            <div className="flex flex-wrap gap-2">
+              {currentAssignments.map((a: any) => (
+                <span key={a.id} className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium">
+                  {a.staff?.first_name} {a.staff?.last_name}
+                  {isAdmin && (
+                    <button type="button" onClick={() => unassignMutation.mutate(a.id)} className="hover:text-destructive">
+                      <X className="h-3 w-3" />
+                    </button>
+                  )}
+                </span>
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-muted-foreground">No staff assigned</p>
+          )}
+          {isAdmin && availableStaff.length > 0 && (
+            <div className="flex gap-2">
+              <select
+                value={staffToAssign}
+                onChange={(e) => setStaffToAssign(e.target.value)}
+                className="flex-1 h-9 rounded-lg border bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              >
+                <option value="">Select staff to assign...</option>
+                {availableStaff.map((s) => (
+                  <option key={s.id} value={s.id}>{s.first_name} {s.last_name}</option>
+                ))}
+              </select>
+              <button
+                type="button"
+                disabled={!staffToAssign || assignMutation.isPending}
+                onClick={() => staffToAssign && assignMutation.mutate(staffToAssign)}
+                className="h-9 px-3 rounded-lg bg-primary text-primary-foreground text-sm font-medium flex items-center gap-1 hover:opacity-90 transition-opacity disabled:opacity-50"
+              >
+                <UserPlus className="h-3.5 w-3.5" /> Assign
+              </button>
+            </div>
+          )}
+
           <div className="flex justify-end gap-2 pt-2">
             <button type="button" onClick={onClose} className="h-9 px-4 rounded-lg border text-sm font-medium text-foreground hover:bg-secondary transition-colors">
               Cancel
