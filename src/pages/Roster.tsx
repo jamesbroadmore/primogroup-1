@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format, startOfWeek, endOfWeek, addWeeks, addDays } from "date-fns";
 import { NewRosterDialog } from "@/components/roster/NewRosterDialog";
+import { EditShiftDialog } from "@/components/roster/EditShiftDialog";
 
 const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const hours = Array.from({ length: 14 }, (_, i) => i + 6);
@@ -13,6 +14,7 @@ const hours = Array.from({ length: 14 }, (_, i) => i + 6);
 export default function Roster() {
   const [weekOffset, setWeekOffset] = useState(0);
   const [rosterDialog, setRosterDialog] = useState<{ date: string; hour: number } | null>(null);
+  const [selectedShift, setSelectedShift] = useState<any>(null);
 
   const currentWeekStart = startOfWeek(addWeeks(new Date(), weekOffset), { weekStartsOn: 1 });
   const currentWeekEnd = endOfWeek(addWeeks(new Date(), weekOffset), { weekStartsOn: 1 });
@@ -144,8 +146,11 @@ export default function Roster() {
                             {shifts.map((s: any) => (
                               <div
                                 key={s.id}
-                                className="rounded-md bg-primary/10 border border-primary/20 px-1.5 py-1 mb-0.5 text-[10px] leading-tight"
-                                onClick={(e) => e.stopPropagation()}
+                                className="rounded-md bg-primary/10 border border-primary/20 px-1.5 py-1 mb-0.5 text-[10px] leading-tight cursor-pointer hover:bg-primary/20 transition-colors"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedShift(s);
+                                }}
                               >
                                 <p className="font-semibold text-primary truncate">
                                   {s.staff?.first_name} {s.staff?.last_name?.[0]}.
@@ -177,6 +182,14 @@ export default function Roster() {
         staffList={staffList}
         clientList={clientList}
       />
+      {selectedShift && (
+        <EditShiftDialog
+          shift={selectedShift}
+          onClose={() => setSelectedShift(null)}
+          staffList={staffList}
+          clientList={clientList}
+        />
+      )}
     </AppLayout>
   );
 }
