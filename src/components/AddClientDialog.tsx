@@ -7,7 +7,8 @@ import { z } from "zod";
 
 const clientSchema = z.object({
   first_name: z.string().trim().min(1, "First name is required").max(100),
-  last_name: z.string().trim().min(1, "Last name is required").max(100),
+  last_name: z.string().trim().min(1, "Surname is required").max(100),
+  preferred_name: z.string().trim().max(100).optional(),
   email: z.string().trim().email("Invalid email").max(255).optional().or(z.literal("")),
   phone: z.string().trim().max(20).optional(),
   date_of_birth: z.string().optional(),
