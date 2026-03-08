@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   Sidebar,
   SidebarContent,
@@ -47,6 +48,13 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
+  const { user, signOut } = useAuth();
+
+  const initials = user?.user_metadata?.display_name
+    ? user.user_metadata.display_name.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2)
+    : user?.email?.slice(0, 2).toUpperCase() ?? "??";
+
+  const displayName = user?.user_metadata?.display_name || user?.email || "User";
 
   return (
     <Sidebar collapsible="icon" className="border-r-0">
@@ -91,17 +99,21 @@ export function AppSidebar() {
       <SidebarFooter className="border-t border-sidebar-border p-3">
         <div className="flex items-center gap-3">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-sidebar-accent text-sidebar-foreground text-xs font-semibold">
-            PA
+            {initials}
           </div>
           {!collapsed && (
             <div className="flex flex-1 items-center justify-between">
-              <div className="flex flex-col">
-                <span className="text-xs font-medium text-sidebar-accent-foreground">
-                  Parker Admin
+              <div className="flex flex-col min-w-0">
+                <span className="text-xs font-medium text-sidebar-accent-foreground truncate">
+                  {displayName}
                 </span>
-                <span className="text-[10px] text-sidebar-foreground/50">Administrator</span>
+                <span className="text-[10px] text-sidebar-foreground/50 truncate">{user?.email}</span>
               </div>
-              <button className="text-sidebar-foreground/50 hover:text-sidebar-foreground transition-colors">
+              <button
+                onClick={() => signOut()}
+                className="text-sidebar-foreground/50 hover:text-sidebar-foreground transition-colors shrink-0"
+                title="Sign out"
+              >
                 <LogOut className="h-4 w-4" />
               </button>
             </div>
