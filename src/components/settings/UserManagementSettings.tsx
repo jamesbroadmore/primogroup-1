@@ -358,10 +358,11 @@ function InviteUserDialog({ onClose, onSuccess }: { onClose: () => void; onSucce
           <div>
             <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Password *</label>
             <input
-              type="password"
+              type="text"
+              autoComplete="off"
               value={form.password}
               onChange={(e) => update("password", e.target.value)}
-              placeholder="••••••••"
+              placeholder="Enter password"
               maxLength={128}
               className={`w-full h-9 rounded-lg border bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring ${errors.password ? "border-destructive" : ""}`}
             />
@@ -507,7 +508,8 @@ function EditUserDialog({ user, onClose, onSuccess }: { user: UserRecord; onClos
           <div>
             <label className="text-xs font-medium text-muted-foreground mb-1.5 block">New Password</label>
             <input
-              type="password"
+              type="text"
+              autoComplete="off"
               value={form.password}
               onChange={(e) => update("password", e.target.value)}
               placeholder="Leave blank to keep current"
