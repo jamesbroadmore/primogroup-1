@@ -1,10 +1,12 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { AppLayout } from "@/components/AppLayout";
-import { Plus, Search, MoreHorizontal, Loader2 } from "lucide-react";
+import { Plus, Search, MoreHorizontal, Loader2, Pencil, Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { AddClientDialog } from "@/components/AddClientDialog";
+import { EditClientDialog } from "@/components/EditClientDialog";
+import { toast } from "sonner";
 
 const TABS = [
   { key: "all", label: "All Clients" },
@@ -21,9 +23,12 @@ function getFundingCategory(fundingType: string | null): string {
 }
 
 export default function Clients() {
+  const queryClient = useQueryClient();
   const [showAdd, setShowAdd] = useState(false);
+  const [editClient, setEditClient] = useState<any>(null);
   const [activeTab, setActiveTab] = useState("all");
   const [search, setSearch] = useState("");
+  const [menuOpen, setMenuOpen] = useState<string | null>(null);
 
   const { data: clientsData = [], isLoading } = useQuery({
     queryKey: ["clients"],
@@ -33,6 +38,26 @@ export default function Clients() {
       return data;
     },
   });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("clients").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Client deleted");
+      queryClient.invalidateQueries({ queryKey: ["clients"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard-client-count"] });
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+
+  const handleDelete = (client: any) => {
+    if (confirm(`Are you sure you want to delete ${client.first_name} ${client.last_name}?`)) {
+      deleteMutation.mutate(client.id);
+    }
+    setMenuOpen(null);
+  };
 
   const filtered = useMemo(() => {
     let list = clientsData;
@@ -99,6 +124,7 @@ export default function Clients() {
         </div>
 
         <AddClientDialog open={showAdd} onClose={() => setShowAdd(false)} />
+        <EditClientDialog open={!!editClient} onClose={() => setEditClient(null)} client={editClient} />
 
         {isLoading ? (
           <div className="flex justify-center py-16"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
@@ -139,7 +165,13 @@ export default function Clients() {
                       {(c as any).preferred_name && <p className="text-xs text-muted-foreground mt-0.5">"{(c as any).preferred_name}"</p>}
                       {c.ndis_number && <p className="text-xs text-muted-foreground mt-0.5">NDIS: {c.ndis_number}</p>}
                     </div>
-                    <button className="text-muted-foreground hover:text-foreground"><MoreHorizontal className="h-4 w-4" /></button>
+                    <ClientActionMenu
+                      open={menuOpen === c.id}
+                      onToggle={() => setMenuOpen(menuOpen === c.id ? null : c.id)}
+                      onClose={() => setMenuOpen(null)}
+                      onEdit={() => { setEditClient(c); setMenuOpen(null); }}
+                      onDelete={() => handleDelete(c)}
+                    />
                   </div>
                   <div className="space-y-2 text-xs">
                     <div className="flex justify-between"><span className="text-muted-foreground">Status</span><span className="text-card-foreground font-medium capitalize">{c.status}</span></div>
@@ -158,5 +190,47 @@ export default function Clients() {
         )}
       </div>
     </AppLayout>
+  );
+}
+
+function ClientActionMenu({ open, onToggle, onClose, onEdit, onDelete }: {
+  open: boolean; onToggle: () => void; onClose: () => void; onEdit: () => void; onDelete: () => void;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) onClose();
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open, onClose]);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={(e) => { e.stopPropagation(); onToggle(); }}
+        className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
+      >
+        <MoreHorizontal className="h-4 w-4" />
+      </button>
+      {open && (
+        <div className="absolute right-0 top-full mt-1 z-50 w-36 rounded-lg bg-popover border border-border shadow-lg py-1">
+          <button
+            onClick={(e) => { e.stopPropagation(); onEdit(); }}
+            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-popover-foreground hover:bg-secondary transition-colors"
+          >
+            <Pencil className="h-3.5 w-3.5" /> Edit
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); onDelete(); }}
+            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors"
+          >
+            <Trash2 className="h-3.5 w-3.5" /> Delete
+          </button>
+        </div>
+      )}
+    </div>
   );
 }
