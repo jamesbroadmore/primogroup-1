@@ -182,6 +182,14 @@ export default function Roster() {
         staffList={staffList}
         clientList={clientList}
       />
+      {selectedShift && (
+        <EditShiftDialog
+          shift={selectedShift}
+          onClose={() => setSelectedShift(null)}
+          staffList={staffList}
+          clientList={clientList}
+        />
+      )}
     </AppLayout>
   );
 }
