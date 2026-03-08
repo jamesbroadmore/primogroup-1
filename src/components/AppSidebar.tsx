@@ -40,6 +40,7 @@ const allNavItems = [
   { title: "Timesheets", url: "/timesheets", icon: Clock, adminOnly: false },
   { title: "Case Notes", url: "/case-notes", icon: FileText, adminOnly: false },
   { title: "Incidents", url: "/incidents", icon: AlertTriangle, adminOnly: false },
+  { title: "My Compliance", url: "/my-compliance", icon: FileUp, adminOnly: false },
   { title: "Compliance", url: "/compliance", icon: ShieldCheck, adminOnly: true },
   { title: "Financials", url: "/financials", icon: DollarSign, adminOnly: true },
   { title: "Reports", url: "/reports", icon: BarChart3, adminOnly: true },
