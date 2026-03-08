@@ -150,7 +150,7 @@ export function AIChatbot() {
                       <Bot className="h-3.5 w-3.5 text-primary" />
                     </div>
                     <div className="rounded-xl rounded-tl-none bg-secondary/50 px-3 py-2 text-sm text-card-foreground">
-                      G'day! I'm the Carters AI Assistant. Ask me about policies, procedures, incident reporting, compliance, or anything else work-related. 👋
+                      G'day! I'm Maureen, your Carters Care assistant. Ask me about policies, procedures, incident reporting, compliance, or anything else work-related. 👋
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-2 pl-9">
