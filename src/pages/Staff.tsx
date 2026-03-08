@@ -31,7 +31,6 @@ export default function Staff() {
         </div>
 
         <AddStaffDialog open={showAdd} onClose={() => setShowAdd(false)} />
-        </div>
 
         {isLoading ? (
           <div className="flex justify-center py-16"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
