@@ -52,6 +52,7 @@ export function AddStaffDialog({ open, onClose }: AddStaffDialogProps) {
       const { error } = await supabase.from("staff").insert({
         first_name: data.first_name,
         last_name: data.last_name,
+        preferred_name: data.preferred_name || null,
         email: data.email,
         phone: data.phone || null,
         role: data.role,
