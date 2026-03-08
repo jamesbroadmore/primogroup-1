@@ -1,22 +1,26 @@
 import { useState } from "react";
 import { AppLayout } from "@/components/AppLayout";
-import { Building2, Shield, Bell, Database, ChevronRight, ArrowLeft } from "lucide-react";
+import { Building2, Shield, Bell, Database, ChevronRight, ArrowLeft, Users } from "lucide-react";
 import { motion } from "framer-motion";
+import { useAuth } from "@/contexts/AuthContext";
 import { SecuritySettings } from "@/components/settings/SecuritySettings";
 import { OrganisationSettings } from "@/components/settings/OrganisationSettings";
 import { NotificationSettings } from "@/components/settings/NotificationSettings";
 import { DataExportSettings } from "@/components/settings/DataExportSettings";
+import { UserManagementSettings } from "@/components/settings/UserManagementSettings";
 
-type SettingsSection = "main" | "organisation" | "security" | "notifications" | "data";
+type SettingsSection = "main" | "organisation" | "security" | "notifications" | "data" | "users";
 
-const sections = [
-  { key: "organisation" as const, title: "Organisation", desc: "Company name, ABN, contact details", icon: Building2 },
-  { key: "security" as const, title: "Security & Permissions", desc: "Role-based access control, data visibility per role", icon: Shield },
-  { key: "notifications" as const, title: "Notifications", desc: "Email alerts, compliance reminders, shift notifications", icon: Bell },
-  { key: "data" as const, title: "Data & Exports", desc: "Data retention, backup settings, export data", icon: Database },
+const allSections = [
+  { key: "users" as const, title: "User Management", desc: "Add users, assign roles, link staff records", icon: Users, adminOnly: true },
+  { key: "organisation" as const, title: "Organisation", desc: "Company name, ABN, contact details", icon: Building2, adminOnly: true },
+  { key: "security" as const, title: "Security & Permissions", desc: "Role-based access control, data visibility per role", icon: Shield, adminOnly: true },
+  { key: "notifications" as const, title: "Notifications", desc: "Email alerts, compliance reminders, shift notifications", icon: Bell, adminOnly: false },
+  { key: "data" as const, title: "Data & Exports", desc: "Data retention, backup settings, export data", icon: Database, adminOnly: true },
 ];
 
 const CONTENT: Record<Exclude<SettingsSection, "main">, React.FC> = {
+  users: UserManagementSettings,
   organisation: OrganisationSettings,
   security: SecuritySettings,
   notifications: NotificationSettings,
@@ -25,9 +29,12 @@ const CONTENT: Record<Exclude<SettingsSection, "main">, React.FC> = {
 
 export default function SettingsPage() {
   const [active, setActive] = useState<SettingsSection>("main");
+  const { isAdmin } = useAuth();
+
+  const sections = isAdmin ? allSections : allSections.filter((s) => !s.adminOnly);
 
   if (active !== "main") {
-    const section = sections.find((s) => s.key === active)!;
+    const section = allSections.find((s) => s.key === active)!;
     const Content = CONTENT[active];
     return (
       <AppLayout title={section.title}>
