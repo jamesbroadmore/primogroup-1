@@ -25,6 +25,7 @@ type StaffForm = z.infer<typeof staffSchema>;
 const emptyForm: StaffForm = {
   first_name: "",
   last_name: "",
+  preferred_name: "",
   email: "",
   phone: "",
   role: "support_worker",
