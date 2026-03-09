@@ -79,9 +79,11 @@ export default function Staff() {
 
         {isLoading ? (
           <div className="flex justify-center py-16"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
-        ) : staffData.length === 0 ? (
+        ) : filteredStaff.length === 0 ? (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="rounded-xl bg-card p-12 shadow-card border border-border/50 text-center">
-            <p className="text-muted-foreground text-sm">No staff members yet. Click "Add Staff" to get started.</p>
+            <p className="text-muted-foreground text-sm">
+              {staffData.length === 0 ? 'No staff members yet. Click "Add Staff" to get started.' : "No staff match your search."}
+            </p>
           </motion.div>
         ) : (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="rounded-xl bg-card shadow-card border border-border/50 overflow-hidden">
