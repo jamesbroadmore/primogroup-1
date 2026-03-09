@@ -55,7 +55,7 @@ export default function Dashboard() {
   const { data: todayCheckins = 0 } = useQuery({
     queryKey: ["dashboard-checkins-today"],
     queryFn: async () => {
-      const today = new Date().toISOString().split("T")[0];
+      const today = getPerthDate();
       const { count } = await supabase.from("shift_checkins").select("*", { count: "exact", head: true }).eq("shift_date", today);
       return count ?? 0;
     },
