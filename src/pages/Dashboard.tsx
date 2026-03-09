@@ -35,14 +35,6 @@ export default function Dashboard() {
     },
   });
 
-  // Western Australia is UTC+8 (AWST)
-  const getTimeGreeting = () => {
-    const now = new Date();
-    const waHour = new Date(now.toLocaleString("en-US", { timeZone: "Australia/Perth" })).getHours();
-    if (waHour < 12) return "Good Morning";
-    if (waHour < 17) return "Good Afternoon";
-    return "Good Evening";
-  };
   const { data: staffCount = 0 } = useQuery({
     queryKey: ["dashboard-staff-count"],
     queryFn: async () => {
