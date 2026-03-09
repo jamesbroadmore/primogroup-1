@@ -44,13 +44,30 @@ export default function Staff() {
     setMenuOpen(null);
   };
 
+  const filteredStaff = useMemo(() => {
+    if (!search.trim()) return staffData;
+    const q = search.toLowerCase();
+    return staffData.filter(
+      (s) =>
+        s.first_name.toLowerCase().includes(q) ||
+        s.last_name.toLowerCase().includes(q) ||
+        s.email.toLowerCase().includes(q) ||
+        ((s as any).preferred_name && (s as any).preferred_name.toLowerCase().includes(q))
+    );
+  }, [staffData, search]);
+
   return (
     <AppLayout title="Staff Management">
       <div className="space-y-4">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="relative w-full sm:w-72">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <input className="w-full h-9 pl-9 pr-3 rounded-lg border bg-card text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" placeholder="Search staff..." />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full h-9 pl-9 pr-3 rounded-lg border bg-card text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              placeholder="Search staff..."
+            />
           </div>
           <button onClick={() => setShowAdd(true)} className="h-9 px-4 rounded-lg bg-primary text-primary-foreground text-sm font-medium flex items-center gap-2 hover:opacity-90 transition-opacity">
             <Plus className="h-4 w-4" /> Add Staff
