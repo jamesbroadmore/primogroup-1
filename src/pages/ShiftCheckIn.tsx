@@ -16,6 +16,7 @@ import {
   History,
 } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
+import { getPerthDate, formatPerthTime } from "@/lib/perth-time";
 
 interface GpsPosition {
   lat: number;
