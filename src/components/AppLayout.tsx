@@ -111,9 +111,6 @@ export function AppLayout({ children, title }: AppLayoutProps) {
               )}
             </div>
             <div className="flex items-center gap-2">
-              <button className="h-9 w-9 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-secondary transition-colors">
-                <Search className="h-4 w-4" />
-              </button>
               <div className="relative" ref={panelRef}>
                 <button
                   onClick={() => setNotifOpen(!notifOpen)}

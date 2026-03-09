@@ -96,7 +96,7 @@ const navGroups: NavGroup[] = [
     label: "Other",
     items: [
       { title: "Onboarding", url: "/onboarding", icon: GraduationCap, adminOnly: false },
-      { title: "Settings", url: "/settings", icon: Settings, adminOnly: false },
+      { title: "Settings", url: "/settings", icon: Settings, adminOnly: true },
     ],
   },
 ];
