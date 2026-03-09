@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { extractPerthTime, perthToISO, formatPerthTime } from "@/lib/perth-time";
 
 interface ShiftData {
   id: string;
@@ -26,11 +27,6 @@ interface EditShiftDialogProps {
   clientList: { id: string; first_name: string; last_name: string }[];
 }
 
-function extractTime(isoString: string | null): string {
-  if (!isoString) return "";
-  return isoString.substring(11, 16);
-}
-
 export function EditShiftDialog({ shift, onClose, staffList, clientList }: EditShiftDialogProps) {
   const queryClient = useQueryClient();
   const { isAdmin } = useAuth();
@@ -39,8 +35,8 @@ export function EditShiftDialog({ shift, onClose, staffList, clientList }: EditS
     staffId: shift.staff_id,
     clientId: shift.client_id || "",
     date: shift.shift_date,
-    startTime: extractTime(shift.start_time),
-    endTime: extractTime(shift.end_time),
+    startTime: extractPerthTime(shift.start_time),
+    endTime: extractPerthTime(shift.end_time),
     notes: shift.notes || "",
     status: shift.status,
   });
@@ -53,8 +49,8 @@ export function EditShiftDialog({ shift, onClose, staffList, clientList }: EditS
           staff_id: form.staffId,
           client_id: form.clientId || null,
           shift_date: form.date,
-          start_time: `${form.date}T${form.startTime}:00`,
-          end_time: form.endTime ? `${form.date}T${form.endTime}:00` : null,
+          start_time: perthToISO(form.date, form.startTime),
+          end_time: form.endTime ? perthToISO(form.date, form.endTime) : null,
           notes: form.notes || null,
           status: form.status,
         })
@@ -64,6 +60,7 @@ export function EditShiftDialog({ shift, onClose, staffList, clientList }: EditS
     onSuccess: () => {
       toast.success("Shift updated");
       queryClient.invalidateQueries({ queryKey: ["roster-timesheets"] });
+      queryClient.invalidateQueries({ queryKey: ["timesheets"] });
       onClose();
     },
     onError: (err: Error) => toast.error(err.message),
@@ -77,6 +74,7 @@ export function EditShiftDialog({ shift, onClose, staffList, clientList }: EditS
     onSuccess: () => {
       toast.success("Shift deleted");
       queryClient.invalidateQueries({ queryKey: ["roster-timesheets"] });
+      queryClient.invalidateQueries({ queryKey: ["timesheets"] });
       onClose();
     },
     onError: (err: Error) => toast.error(err.message),
@@ -102,7 +100,10 @@ export function EditShiftDialog({ shift, onClose, staffList, clientList }: EditS
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between p-5 border-b">
-          <h2 className="text-lg font-semibold text-card-foreground">Shift Details</h2>
+          <div>
+            <h2 className="text-lg font-semibold text-card-foreground">Shift Details</h2>
+            <p className="text-[10px] text-muted-foreground mt-0.5">Times shown in Perth AWST (UTC+8)</p>
+          </div>
           <button onClick={onClose} className="text-muted-foreground hover:text-foreground">
             <X className="h-5 w-5" />
           </button>
@@ -118,6 +119,15 @@ export function EditShiftDialog({ shift, onClose, staffList, clientList }: EditS
             }`}>
               {form.status.charAt(0).toUpperCase() + form.status.slice(1)}
             </span>
+            {isAdmin && form.status === "pending" && (
+              <button
+                type="button"
+                onClick={() => setForm({ ...form, status: "approved" })}
+                className="text-[10px] text-success hover:underline font-medium"
+              >
+                Approve
+              </button>
+            )}
           </div>
 
           {/* Date */}

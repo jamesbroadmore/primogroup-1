@@ -3,10 +3,14 @@ import { Download, CheckCircle, Clock, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { format } from "date-fns";
 import { toast } from "sonner";
+import { useState } from "react";
+import { formatPerthDate, formatPerthTime, extractPerthTime } from "@/lib/perth-time";
+import { TimesheetDetailDialog } from "@/components/timesheets/TimesheetDetailDialog";
 
 export default function Timesheets() {
+  const [selectedTimesheet, setSelectedTimesheet] = useState<any>(null);
+
   const { data: timesheets = [], isLoading } = useQuery({
     queryKey: ["timesheets"],
     queryFn: async () => {
@@ -25,13 +29,13 @@ export default function Timesheets() {
       toast.info("No timesheets to export");
       return;
     }
-    const headers = ["Staff", "Client", "Date", "Start", "End", "Hours", "Break (min)", "Status"];
+    const headers = ["Staff", "Client", "Date", "Start (AWST)", "End (AWST)", "Hours", "Break (min)", "Status"];
     const rows = timesheets.map((t: any) => [
       t.staff ? `${t.staff.first_name} ${t.staff.last_name}` : "",
       t.client ? `${t.client.first_name} ${t.client.last_name}` : "",
       t.shift_date,
-      t.start_time ? t.start_time.substring(11, 16) : "",
-      t.end_time ? t.end_time.substring(11, 16) : "",
+      t.start_time ? extractPerthTime(t.start_time) : "",
+      t.end_time ? extractPerthTime(t.end_time) : "",
       t.total_hours ?? "",
       t.break_minutes ?? 0,
       t.status,
@@ -75,13 +79,18 @@ export default function Timesheets() {
                     <th className="text-left px-4 py-3 font-medium text-muted-foreground">Staff</th>
                     <th className="text-left px-4 py-3 font-medium text-muted-foreground">Client</th>
                     <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden md:table-cell">Date</th>
+                    <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden lg:table-cell">Time (AWST)</th>
                     <th className="text-left px-4 py-3 font-medium text-muted-foreground">Hours</th>
                     <th className="text-left px-4 py-3 font-medium text-muted-foreground">Status</th>
                   </tr>
                 </thead>
                 <tbody>
                   {timesheets.map((t: any) => (
-                    <tr key={t.id} className="border-b last:border-0 hover:bg-secondary/30 transition-colors">
+                    <tr
+                      key={t.id}
+                      onClick={() => setSelectedTimesheet(t)}
+                      className="border-b last:border-0 hover:bg-secondary/30 transition-colors cursor-pointer"
+                    >
                       <td className="px-4 py-3 font-medium text-card-foreground">
                         {t.staff ? `${t.staff.first_name} ${t.staff.last_name}` : "—"}
                       </td>
@@ -89,7 +98,11 @@ export default function Timesheets() {
                         {t.client ? `${t.client.first_name} ${t.client.last_name}` : "—"}
                       </td>
                       <td className="px-4 py-3 text-muted-foreground hidden md:table-cell">
-                        {format(new Date(t.shift_date), "MMM d, yyyy")}
+                        {formatPerthDate(t.shift_date)}
+                      </td>
+                      <td className="px-4 py-3 text-muted-foreground hidden lg:table-cell">
+                        {t.start_time ? formatPerthTime(t.start_time) : "—"}
+                        {t.end_time ? ` – ${formatPerthTime(t.end_time)}` : ""}
                       </td>
                       <td className="px-4 py-3 text-card-foreground font-medium">{t.total_hours ? `${t.total_hours}h` : "—"}</td>
                       <td className="px-4 py-3">
@@ -110,6 +123,13 @@ export default function Timesheets() {
           </motion.div>
         )}
       </div>
+
+      {selectedTimesheet && (
+        <TimesheetDetailDialog
+          timesheet={selectedTimesheet}
+          onClose={() => setSelectedTimesheet(null)}
+        />
+      )}
     </AppLayout>
   );
 }

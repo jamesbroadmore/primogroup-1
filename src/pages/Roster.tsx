@@ -1,17 +1,20 @@
 import { AppLayout } from "@/components/AppLayout";
 import { ChevronLeft, ChevronRight, Loader2, Plus } from "lucide-react";
 import { motion } from "framer-motion";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format, startOfWeek, endOfWeek, addWeeks, addDays } from "date-fns";
 import { NewRosterDialog } from "@/components/roster/NewRosterDialog";
 import { EditShiftDialog } from "@/components/roster/EditShiftDialog";
+import { useAuth } from "@/contexts/AuthContext";
+import { extractPerthHour, formatPerthTime, getPerthDate } from "@/lib/perth-time";
 
 const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const hours = Array.from({ length: 14 }, (_, i) => i + 6);
 
 export default function Roster() {
+  const { isAdmin } = useAuth();
   const [weekOffset, setWeekOffset] = useState(0);
   const [rosterDialog, setRosterDialog] = useState<{ date: string; hour: number } | null>(null);
   const [selectedShift, setSelectedShift] = useState<any>(null);
@@ -65,11 +68,12 @@ export default function Roster() {
   });
 
   const handleCellClick = (dayIndex: number, hour: number) => {
+    if (!isAdmin) return;
     const date = format(weekDates[dayIndex], "yyyy-MM-dd");
     setRosterDialog({ date, hour });
   };
 
-  // Map timesheets to grid positions
+  // Map timesheets to grid positions using Perth timezone
   const shiftsByCell = useMemo(() => {
     const map: Record<string, typeof timesheets> = {};
     timesheets.forEach((t) => {
@@ -77,8 +81,7 @@ export default function Roster() {
         (d) => format(d, "yyyy-MM-dd") === t.shift_date
       );
       if (dayIdx < 0) return;
-      // Parse hour directly from the ISO string to avoid timezone conversion issues
-      const startHour = t.start_time ? parseInt(t.start_time.substring(11, 13), 10) : null;
+      const startHour = t.start_time ? extractPerthHour(t.start_time) : null;
       if (startHour === null) return;
       const key = `${dayIdx}-${startHour}`;
       if (!map[key]) map[key] = [];
@@ -105,12 +108,14 @@ export default function Roster() {
               <button onClick={() => setWeekOffset(0)} className="text-xs text-primary hover:underline font-medium ml-2">Today</button>
             )}
           </div>
-          <button
-            onClick={() => setRosterDialog({ date: format(new Date(), "yyyy-MM-dd"), hour: new Date().getHours() })}
-            className="h-9 px-4 rounded-lg bg-primary text-primary-foreground text-sm font-medium flex items-center gap-2 hover:opacity-90 transition-opacity"
-          >
-            <Plus className="h-4 w-4" /> New Roster
-          </button>
+          {isAdmin && (
+            <button
+              onClick={() => setRosterDialog({ date: getPerthDate(), hour: new Date().getHours() })}
+              className="h-9 px-4 rounded-lg bg-primary text-primary-foreground text-sm font-medium flex items-center gap-2 hover:opacity-90 transition-opacity"
+            >
+              <Plus className="h-4 w-4" /> New Roster
+            </button>
+          )}
         </div>
 
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="rounded-xl bg-card shadow-card border border-border/50 overflow-hidden">
@@ -141,7 +146,9 @@ export default function Roster() {
                           <div
                             key={di}
                             onClick={() => handleCellClick(di, h)}
-                            className="px-1 py-1 relative min-h-[48px] cursor-pointer hover:bg-primary/5 transition-colors border-l"
+                            className={`px-1 py-1 relative min-h-[48px] transition-colors border-l ${
+                              isAdmin ? "cursor-pointer hover:bg-primary/5" : "cursor-default"
+                            }`}
                           >
                             {shifts.map((s: any) => (
                               <div
@@ -160,6 +167,9 @@ export default function Roster() {
                                     → {s.client.first_name} {s.client.last_name?.[0]}.
                                   </p>
                                 )}
+                                <p className="text-muted-foreground/60">
+                                  {formatPerthTime(s.start_time)}
+                                </p>
                               </div>
                             ))}
                           </div>
@@ -172,16 +182,20 @@ export default function Roster() {
             </div>
           )}
         </motion.div>
+
+        <p className="text-[10px] text-muted-foreground text-center">All times shown in Perth AWST (UTC+8)</p>
       </div>
 
-      <NewRosterDialog
-        open={!!rosterDialog}
-        onClose={() => setRosterDialog(null)}
-        defaultDate={rosterDialog?.date ?? format(new Date(), "yyyy-MM-dd")}
-        defaultHour={rosterDialog?.hour ?? 8}
-        staffList={staffList}
-        clientList={clientList}
-      />
+      {isAdmin && (
+        <NewRosterDialog
+          open={!!rosterDialog}
+          onClose={() => setRosterDialog(null)}
+          defaultDate={rosterDialog?.date ?? getPerthDate()}
+          defaultHour={rosterDialog?.hour ?? 8}
+          staffList={staffList}
+          clientList={clientList}
+        />
+      )}
       {selectedShift && (
         <EditShiftDialog
           shift={selectedShift}
