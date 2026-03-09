@@ -1,7 +1,8 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AIChatbot } from "@/components/AIChatbot";
 import { AppSidebar } from "@/components/AppSidebar";
-import { Bell, Search, AlertTriangle, ShieldCheck, Clock, X } from "lucide-react";
+import { Bell, AlertTriangle, ShieldCheck, Clock, X } from "lucide-react";
+import { getPerthDate } from "@/lib/perth-time";
 import { useState, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
