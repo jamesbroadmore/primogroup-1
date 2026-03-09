@@ -16,6 +16,7 @@ import {
   History,
 } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
+import { getPerthDate, formatPerthTime } from "@/lib/perth-time";
 
 interface GpsPosition {
   lat: number;
@@ -93,7 +94,7 @@ export default function ShiftCheckIn() {
   const { data: todayCheckins = [], isLoading } = useQuery({
     queryKey: ["shift-checkins-today"],
     queryFn: async () => {
-      const today = new Date().toISOString().split("T")[0];
+      const today = getPerthDate();
       const { data, error } = await supabase
         .from("shift_checkins")
         .select("*")
@@ -250,7 +251,7 @@ export default function ShiftCheckIn() {
                 <div>
                   <p className="text-lg font-semibold text-card-foreground">Currently Clocked In</p>
                   <p className="text-sm text-muted-foreground">
-                    {activeCheckin.staff_name} · Since {format(new Date(activeCheckin.check_in_time!), "h:mm a")}
+                    {activeCheckin.staff_name} · Since {formatPerthTime(activeCheckin.check_in_time!)}
                   </p>
                 </div>
               </div>
@@ -379,9 +380,9 @@ export default function ShiftCheckIn() {
                           )}
                         </p>
                         <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-                          <span>{format(new Date(checkin.check_in_time!), "MMM d, h:mm a")}</span>
+                          <span>{formatPerthTime(checkin.check_in_time!)}</span>
                           {checkin.check_out_time && (
-                            <span>→ {format(new Date(checkin.check_out_time), "h:mm a")}</span>
+                            <span>→ {formatPerthTime(checkin.check_out_time)}</span>
                           )}
                           {checkin.check_in_lat && (
                             <span className="flex items-center gap-0.5">

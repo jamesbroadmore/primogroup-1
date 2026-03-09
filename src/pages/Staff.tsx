@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import { Plus, Search, CheckCircle, XCircle, Loader2, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
@@ -13,6 +13,7 @@ export default function Staff() {
   const [showAdd, setShowAdd] = useState(false);
   const [editStaff, setEditStaff] = useState<any>(null);
   const [menuOpen, setMenuOpen] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
 
   const { data: staffData = [], isLoading } = useQuery({
     queryKey: ["staff"],
@@ -43,13 +44,30 @@ export default function Staff() {
     setMenuOpen(null);
   };
 
+  const filteredStaff = useMemo(() => {
+    if (!search.trim()) return staffData;
+    const q = search.toLowerCase();
+    return staffData.filter(
+      (s) =>
+        s.first_name.toLowerCase().includes(q) ||
+        s.last_name.toLowerCase().includes(q) ||
+        s.email.toLowerCase().includes(q) ||
+        ((s as any).preferred_name && (s as any).preferred_name.toLowerCase().includes(q))
+    );
+  }, [staffData, search]);
+
   return (
     <AppLayout title="Staff Management">
       <div className="space-y-4">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
           <div className="relative w-full sm:w-72">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <input className="w-full h-9 pl-9 pr-3 rounded-lg border bg-card text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" placeholder="Search staff..." />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full h-9 pl-9 pr-3 rounded-lg border bg-card text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              placeholder="Search staff..."
+            />
           </div>
           <button onClick={() => setShowAdd(true)} className="h-9 px-4 rounded-lg bg-primary text-primary-foreground text-sm font-medium flex items-center gap-2 hover:opacity-90 transition-opacity">
             <Plus className="h-4 w-4" /> Add Staff
@@ -61,9 +79,11 @@ export default function Staff() {
 
         {isLoading ? (
           <div className="flex justify-center py-16"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
-        ) : staffData.length === 0 ? (
+        ) : filteredStaff.length === 0 ? (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="rounded-xl bg-card p-12 shadow-card border border-border/50 text-center">
-            <p className="text-muted-foreground text-sm">No staff members yet. Click "Add Staff" to get started.</p>
+            <p className="text-muted-foreground text-sm">
+              {staffData.length === 0 ? 'No staff members yet. Click "Add Staff" to get started.' : "No staff match your search."}
+            </p>
           </motion.div>
         ) : (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="rounded-xl bg-card shadow-card border border-border/50 overflow-hidden">
@@ -82,7 +102,7 @@ export default function Staff() {
                   </tr>
                 </thead>
                 <tbody>
-                  {staffData.map((s) => (
+                  {filteredStaff.map((s) => (
                     <tr
                       key={s.id}
                       className="border-b last:border-0 hover:bg-secondary/30 transition-colors"

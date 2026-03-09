@@ -1,7 +1,8 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AIChatbot } from "@/components/AIChatbot";
 import { AppSidebar } from "@/components/AppSidebar";
-import { Bell, Search, AlertTriangle, ShieldCheck, Clock, X } from "lucide-react";
+import { Bell, AlertTriangle, ShieldCheck, Clock, X } from "lucide-react";
+import { getPerthDate } from "@/lib/perth-time";
 import { useState, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -57,7 +58,7 @@ export function AppLayout({ children, title }: AppLayoutProps) {
   const { data: activeCheckins = 0 } = useQuery({
     queryKey: ["notif-checkins"],
     queryFn: async () => {
-      const today = new Date().toISOString().split("T")[0];
+      const today = getPerthDate();
       const { count } = await supabase.from("shift_checkins").select("*", { count: "exact", head: true }).eq("shift_date", today).eq("status", "checked_in");
       return count ?? 0;
     },
@@ -110,9 +111,6 @@ export function AppLayout({ children, title }: AppLayoutProps) {
               )}
             </div>
             <div className="flex items-center gap-2">
-              <button className="h-9 w-9 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-secondary transition-colors">
-                <Search className="h-4 w-4" />
-              </button>
               <div className="relative" ref={panelRef}>
                 <button
                   onClick={() => setNotifOpen(!notifOpen)}

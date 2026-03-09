@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { getPerthGreeting, getPerthDate, formatPerthTime } from "@/lib/perth-time";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -35,14 +36,6 @@ export default function Dashboard() {
     },
   });
 
-  // Western Australia is UTC+8 (AWST)
-  const getTimeGreeting = () => {
-    const now = new Date();
-    const waHour = new Date(now.toLocaleString("en-US", { timeZone: "Australia/Perth" })).getHours();
-    if (waHour < 12) return "Good Morning";
-    if (waHour < 17) return "Good Afternoon";
-    return "Good Evening";
-  };
   const { data: staffCount = 0 } = useQuery({
     queryKey: ["dashboard-staff-count"],
     queryFn: async () => {
@@ -62,7 +55,7 @@ export default function Dashboard() {
   const { data: todayCheckins = 0 } = useQuery({
     queryKey: ["dashboard-checkins-today"],
     queryFn: async () => {
-      const today = new Date().toISOString().split("T")[0];
+      const today = getPerthDate();
       const { count } = await supabase.from("shift_checkins").select("*", { count: "exact", head: true }).eq("shift_date", today);
       return count ?? 0;
     },
@@ -108,7 +101,7 @@ export default function Dashboard() {
           animate={{ opacity: 1, y: 0 }}
           className="text-xl font-semibold text-foreground"
         >
-          {getTimeGreeting()}, {greeting ?? "..."}
+          {getPerthGreeting()}, {greeting ?? "..."}
         </motion.h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -134,7 +127,7 @@ export default function Dashboard() {
                 <div key={c.id} className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-secondary/50">
                   <div>
                     <p className="text-sm font-medium text-card-foreground">{c.staff_name}</p>
-                    <p className="text-xs text-muted-foreground">{c.client_name || "No client"} · {c.check_in_time ? new Date(c.check_in_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "—"}</p>
+                    <p className="text-xs text-muted-foreground">{c.client_name || "No client"} · {c.check_in_time ? formatPerthTime(c.check_in_time) : "—"}</p>
                   </div>
                   <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${
                     c.status === "checked_in" ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"
