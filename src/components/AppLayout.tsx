@@ -57,7 +57,7 @@ export function AppLayout({ children, title }: AppLayoutProps) {
   const { data: activeCheckins = 0 } = useQuery({
     queryKey: ["notif-checkins"],
     queryFn: async () => {
-      const today = new Date().toISOString().split("T")[0];
+      const today = getPerthDate();
       const { count } = await supabase.from("shift_checkins").select("*", { count: "exact", head: true }).eq("shift_date", today).eq("status", "checked_in");
       return count ?? 0;
     },
