@@ -275,6 +275,14 @@ export function EditClientDialog({ open, onClose, client }: EditClientDialogProp
             />
           </div>
 
+          {/* Funding & Compliance */}
+          {isAdmin && client?.id && (
+            <>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider pt-2">Funding & Compliance</p>
+              <ClientFundingPanel clientId={client.id} clientName={`${form.first_name} ${form.last_name}`} />
+            </>
+          )}
+
           {/* Assigned Staff Section */}
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider pt-2">Assigned Staff</p>
           {currentAssignments.length > 0 ? (
