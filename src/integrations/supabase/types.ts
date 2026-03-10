@@ -44,6 +44,104 @@ export type Database = {
         }
         Relationships: []
       }
+      billing_validations: {
+        Row: {
+          created_at: string | null
+          details: Json | null
+          id: string
+          invoice_id: string | null
+          message: string
+          passed: boolean
+          timesheet_id: string | null
+          validation_type: string
+        }
+        Insert: {
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          invoice_id?: string | null
+          message: string
+          passed: boolean
+          timesheet_id?: string | null
+          validation_type: string
+        }
+        Update: {
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          invoice_id?: string | null
+          message?: string
+          passed?: boolean
+          timesheet_id?: string | null
+          validation_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "billing_validations_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "billing_validations_timesheet_id_fkey"
+            columns: ["timesheet_id"]
+            isOneToOne: false
+            referencedRelation: "timesheets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      care_plans: {
+        Row: {
+          approved_services: string[] | null
+          client_id: string
+          created_at: string | null
+          document_url: string | null
+          end_date: string | null
+          goals: string[] | null
+          id: string
+          plan_name: string
+          start_date: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          approved_services?: string[] | null
+          client_id: string
+          created_at?: string | null
+          document_url?: string | null
+          end_date?: string | null
+          goals?: string[] | null
+          id?: string
+          plan_name: string
+          start_date?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          approved_services?: string[] | null
+          client_id?: string
+          created_at?: string | null
+          document_url?: string | null
+          end_date?: string | null
+          goals?: string[] | null
+          id?: string
+          plan_name?: string
+          start_date?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "care_plans_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       case_notes: {
         Row: {
           category: string | null
@@ -91,6 +189,62 @@ export type Database = {
             columns: ["staff_id"]
             isOneToOne: false
             referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_funding: {
+        Row: {
+          approved_categories: string[] | null
+          budget_used: number | null
+          client_id: string
+          created_at: string | null
+          funding_program: string
+          id: string
+          notes: string | null
+          plan_end_date: string | null
+          plan_number: string | null
+          plan_start_date: string | null
+          status: string | null
+          total_budget: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          approved_categories?: string[] | null
+          budget_used?: number | null
+          client_id: string
+          created_at?: string | null
+          funding_program: string
+          id?: string
+          notes?: string | null
+          plan_end_date?: string | null
+          plan_number?: string | null
+          plan_start_date?: string | null
+          status?: string | null
+          total_budget?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          approved_categories?: string[] | null
+          budget_used?: number | null
+          client_id?: string
+          created_at?: string | null
+          funding_program?: string
+          id?: string
+          notes?: string | null
+          plan_end_date?: string | null
+          plan_number?: string | null
+          plan_start_date?: string | null
+          status?: string | null
+          total_budget?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_funding_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
             referencedColumns: ["id"]
           },
         ]
@@ -200,6 +354,51 @@ export type Database = {
           status?: string
           support_needs?: string | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      compliance_flags: {
+        Row: {
+          created_at: string | null
+          description: string
+          details: Json | null
+          flag_type: string
+          id: string
+          resolved_at: string | null
+          resolved_by: string | null
+          resource_id: string | null
+          resource_type: string
+          severity: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description: string
+          details?: Json | null
+          flag_type: string
+          id?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          resource_id?: string | null
+          resource_type: string
+          severity?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string
+          details?: Json | null
+          flag_type?: string
+          id?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          resource_id?: string | null
+          resource_type?: string
+          severity?: string | null
+          status?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -338,10 +537,12 @@ export type Database = {
           client_id: string | null
           created_at: string
           description: string
+          funding_program: string | null
           hours: number
           id: string
           invoice_id: string
           rate: number
+          service_category_id: string | null
           service_date: string | null
           timesheet_id: string | null
         }
@@ -350,10 +551,12 @@ export type Database = {
           client_id?: string | null
           created_at?: string
           description: string
+          funding_program?: string | null
           hours?: number
           id?: string
           invoice_id: string
           rate?: number
+          service_category_id?: string | null
           service_date?: string | null
           timesheet_id?: string | null
         }
@@ -362,10 +565,12 @@ export type Database = {
           client_id?: string | null
           created_at?: string
           description?: string
+          funding_program?: string | null
           hours?: number
           id?: string
           invoice_id?: string
           rate?: number
+          service_category_id?: string | null
           service_date?: string | null
           timesheet_id?: string | null
         }
@@ -382,6 +587,13 @@ export type Database = {
             columns: ["invoice_id"]
             isOneToOne: false
             referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_line_items_service_category_id_fkey"
+            columns: ["service_category_id"]
+            isOneToOne: false
+            referencedRelation: "service_categories"
             referencedColumns: ["id"]
           },
           {
@@ -544,6 +756,98 @@ export type Database = {
         }
         Relationships: []
       }
+      service_agreements: {
+        Row: {
+          agreement_date: string
+          client_id: string
+          created_at: string | null
+          document_url: string | null
+          id: string
+          notes: string | null
+          signed: boolean | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          agreement_date?: string
+          client_id: string
+          created_at?: string | null
+          document_url?: string | null
+          id?: string
+          notes?: string | null
+          signed?: boolean | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          agreement_date?: string
+          client_id?: string
+          created_at?: string | null
+          document_url?: string | null
+          id?: string
+          notes?: string | null
+          signed?: boolean | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_agreements_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_categories: {
+        Row: {
+          category_code: string
+          category_name: string
+          created_at: string | null
+          description: string | null
+          funding_program: string
+          gst_applicable: boolean | null
+          id: string
+          is_active: boolean | null
+          max_rate: number | null
+          public_holiday_rate_multiplier: number | null
+          requires_qualification: string[] | null
+          updated_at: string | null
+          weekend_rate_multiplier: number | null
+        }
+        Insert: {
+          category_code: string
+          category_name: string
+          created_at?: string | null
+          description?: string | null
+          funding_program: string
+          gst_applicable?: boolean | null
+          id?: string
+          is_active?: boolean | null
+          max_rate?: number | null
+          public_holiday_rate_multiplier?: number | null
+          requires_qualification?: string[] | null
+          updated_at?: string | null
+          weekend_rate_multiplier?: number | null
+        }
+        Update: {
+          category_code?: string
+          category_name?: string
+          created_at?: string | null
+          description?: string | null
+          funding_program?: string
+          gst_applicable?: boolean | null
+          id?: string
+          is_active?: boolean | null
+          max_rate?: number | null
+          public_holiday_rate_multiplier?: number | null
+          requires_qualification?: string[] | null
+          updated_at?: string | null
+          weekend_rate_multiplier?: number | null
+        }
+        Relationships: []
+      }
       shift_checkins: {
         Row: {
           check_in_address: string | null
@@ -689,6 +993,7 @@ export type Database = {
           id: string
           notes: string | null
           rate_per_hour: number | null
+          service_category_id: string | null
           shift_date: string
           staff_id: string
           start_time: string
@@ -706,6 +1011,7 @@ export type Database = {
           id?: string
           notes?: string | null
           rate_per_hour?: number | null
+          service_category_id?: string | null
           shift_date: string
           staff_id: string
           start_time: string
@@ -723,6 +1029,7 @@ export type Database = {
           id?: string
           notes?: string | null
           rate_per_hour?: number | null
+          service_category_id?: string | null
           shift_date?: string
           staff_id?: string
           start_time?: string
@@ -743,6 +1050,13 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "timesheets_service_category_id_fkey"
+            columns: ["service_category_id"]
+            isOneToOne: false
+            referencedRelation: "service_categories"
             referencedColumns: ["id"]
           },
           {
