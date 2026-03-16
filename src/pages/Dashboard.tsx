@@ -1,10 +1,9 @@
 import { AppLayout } from "@/components/AppLayout";
 import { MetricCard } from "@/components/MetricCard";
-import { Users, UserCircle, CalendarDays, DollarSign, AlertTriangle, ShieldCheck } from "lucide-react";
+import { Users, UserCircle, CalendarDays, AlertTriangle, ShieldCheck, FileText, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { getPerthGreeting, getPerthDate, formatPerthTime } from "@/lib/perth-time";
 
@@ -15,23 +14,13 @@ export default function Dashboard() {
     queryKey: ["dashboard-greeting", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      // Get profile → staff link to find preferred_name
       const { data: profile } = await supabase
-        .from("profiles")
-        .select("display_name, staff_id")
-        .eq("user_id", user!.id)
-        .single();
-
+        .from("profiles").select("display_name, staff_id").eq("user_id", user!.id).single();
       if (profile?.staff_id) {
-        const { data: staff } = await supabase
-          .from("staff")
-          .select("preferred_name, first_name")
-          .eq("id", profile.staff_id)
-          .single();
+        const { data: staff } = await supabase.from("staff").select("preferred_name, first_name").eq("id", profile.staff_id).single();
         if (staff?.preferred_name) return staff.preferred_name;
         if (staff?.first_name) return staff.first_name;
       }
-
       return profile?.display_name || user!.email?.split("@")[0] || "there";
     },
   });
@@ -77,6 +66,15 @@ export default function Dashboard() {
     },
   });
 
+  const { data: todayNotes = 0 } = useQuery({
+    queryKey: ["dashboard-notes-today"],
+    queryFn: async () => {
+      const today = getPerthDate();
+      const { count } = await supabase.from("case_notes").select("*", { count: "exact", head: true }).gte("note_date", `${today}T00:00:00`).lte("note_date", `${today}T23:59:59`);
+      return count ?? 0;
+    },
+  });
+
   const { data: recentCheckins = [], isLoading } = useQuery({
     queryKey: ["dashboard-recent-checkins"],
     queryFn: async () => {
@@ -89,6 +87,7 @@ export default function Dashboard() {
     { title: "Active Staff", value: staffCount, change: "", changeType: "neutral" as const, icon: Users, iconColor: "bg-primary/10 text-primary", href: "/staff" },
     { title: "Active Clients", value: clientCount, change: "", changeType: "neutral" as const, icon: UserCircle, iconColor: "bg-info/10 text-info", href: "/clients" },
     { title: "Check-Ins Today", value: todayCheckins, change: "", changeType: "neutral" as const, icon: CalendarDays, iconColor: "bg-warning/10 text-warning", href: "/check-in" },
+    { title: "Case Notes Today", value: todayNotes, change: "", changeType: "neutral" as const, icon: FileText, iconColor: "bg-primary/10 text-primary", href: "/case-notes" },
     { title: "Open Incidents", value: openIncidents, change: openIncidents > 0 ? "Requires attention" : "All clear", changeType: openIncidents > 0 ? "negative" as const : "positive" as const, icon: AlertTriangle, iconColor: "bg-destructive/10 text-destructive", href: "/incidents" },
     { title: "Compliance Alerts", value: complianceAlerts, change: complianceAlerts > 0 ? "Action needed" : "All current", changeType: complianceAlerts > 0 ? "negative" as const : "positive" as const, icon: ShieldCheck, iconColor: "bg-warning/10 text-warning", href: "/compliance" },
   ];
@@ -96,26 +95,16 @@ export default function Dashboard() {
   return (
     <AppLayout title="Dashboard">
       <div className="space-y-6">
-        <motion.h2
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-xl font-semibold text-foreground"
-        >
+        <motion.h2 initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="text-xl font-semibold text-foreground">
           {getPerthGreeting()}, {greeting ?? "..."}
         </motion.h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {metrics.map((m, i) => (
-            <MetricCard key={i} {...m} />
-          ))}
+          {metrics.map((m, i) => <MetricCard key={i} {...m} />)}
         </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="rounded-xl bg-card p-5 shadow-card border border-border/50"
-        >
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+          className="rounded-xl bg-card p-5 shadow-card border border-border/50">
           <h2 className="text-sm font-semibold text-card-foreground mb-4">Recent Activity</h2>
           {isLoading ? (
             <div className="flex justify-center py-8"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>

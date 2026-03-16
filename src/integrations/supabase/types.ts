@@ -148,6 +148,7 @@ export type Database = {
           client_id: string
           content: string
           created_at: string
+          created_by: string | null
           id: string
           is_confidential: boolean | null
           note_date: string
@@ -159,6 +160,7 @@ export type Database = {
           client_id: string
           content: string
           created_at?: string
+          created_by?: string | null
           id?: string
           is_confidential?: boolean | null
           note_date?: string
@@ -170,6 +172,7 @@ export type Database = {
           client_id?: string
           content?: string
           created_at?: string
+          created_by?: string | null
           id?: string
           is_confidential?: boolean | null
           note_date?: string
@@ -456,6 +459,7 @@ export type Database = {
         Row: {
           client_id: string | null
           created_at: string
+          created_by: string | null
           description: string
           follow_up_notes: string | null
           follow_up_required: boolean | null
@@ -463,7 +467,9 @@ export type Database = {
           immediate_action: string | null
           incident_date: string
           incident_type: string
+          injury_occurred: boolean | null
           location: string | null
+          medical_attention_required: boolean | null
           reported_by: string | null
           resolved_at: string | null
           resolved_by: string | null
@@ -474,6 +480,7 @@ export type Database = {
         Insert: {
           client_id?: string | null
           created_at?: string
+          created_by?: string | null
           description: string
           follow_up_notes?: string | null
           follow_up_required?: boolean | null
@@ -481,7 +488,9 @@ export type Database = {
           immediate_action?: string | null
           incident_date: string
           incident_type: string
+          injury_occurred?: boolean | null
           location?: string | null
+          medical_attention_required?: boolean | null
           reported_by?: string | null
           resolved_at?: string | null
           resolved_by?: string | null
@@ -492,6 +501,7 @@ export type Database = {
         Update: {
           client_id?: string | null
           created_at?: string
+          created_by?: string | null
           description?: string
           follow_up_notes?: string | null
           follow_up_required?: boolean | null
@@ -499,7 +509,9 @@ export type Database = {
           immediate_action?: string | null
           incident_date?: string
           incident_type?: string
+          injury_occurred?: boolean | null
           location?: string | null
+          medical_attention_required?: boolean | null
           reported_by?: string | null
           resolved_at?: string | null
           resolved_by?: string | null
@@ -609,6 +621,7 @@ export type Database = {
         Row: {
           abn: string | null
           created_at: string
+          created_by: string | null
           due_date: string | null
           gst: number
           id: string
@@ -624,6 +637,7 @@ export type Database = {
         Insert: {
           abn?: string | null
           created_at?: string
+          created_by?: string | null
           due_date?: string | null
           gst?: number
           id?: string
@@ -639,6 +653,7 @@ export type Database = {
         Update: {
           abn?: string | null
           created_at?: string
+          created_by?: string | null
           due_date?: string | null
           gst?: number
           id?: string
@@ -654,6 +669,56 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "invoices_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      onboarding_tasks: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          staff_id: string
+          status: string
+          task_name: string
+          task_type: string
+          updated_at: string
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          staff_id: string
+          status?: string
+          task_name: string
+          task_type?: string
+          updated_at?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          staff_id?: string
+          status?: string
+          task_name?: string
+          task_type?: string
+          updated_at?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "onboarding_tasks_staff_id_fkey"
             columns: ["staff_id"]
             isOneToOne: false
             referencedRelation: "staff"
@@ -681,6 +746,90 @@ export type Database = {
           value?: string | null
         }
         Relationships: []
+      }
+      policies: {
+        Row: {
+          content: string | null
+          created_at: string
+          created_by: string | null
+          document_url: string | null
+          id: string
+          policy_category: string
+          published_date: string | null
+          requires_acknowledgement: boolean | null
+          status: string
+          title: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          created_by?: string | null
+          document_url?: string | null
+          id?: string
+          policy_category: string
+          published_date?: string | null
+          requires_acknowledgement?: boolean | null
+          status?: string
+          title: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          created_by?: string | null
+          document_url?: string | null
+          id?: string
+          policy_category?: string
+          published_date?: string | null
+          requires_acknowledgement?: boolean | null
+          status?: string
+          title?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: []
+      }
+      policy_acknowledgements: {
+        Row: {
+          acknowledged_at: string
+          id: string
+          ip_address: string | null
+          policy_id: string
+          staff_id: string
+        }
+        Insert: {
+          acknowledged_at?: string
+          id?: string
+          ip_address?: string | null
+          policy_id: string
+          staff_id: string
+        }
+        Update: {
+          acknowledged_at?: string
+          id?: string
+          ip_address?: string | null
+          policy_id?: string
+          staff_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "policy_acknowledgements_policy_id_fkey"
+            columns: ["policy_id"]
+            isOneToOne: false
+            referencedRelation: "policies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "policy_acknowledgements_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -1061,6 +1210,65 @@ export type Database = {
           },
           {
             foreignKeyName: "timesheets_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      training_records: {
+        Row: {
+          certificate_url: string | null
+          completion_date: string | null
+          created_at: string
+          created_by: string | null
+          expiry_date: string | null
+          id: string
+          notes: string | null
+          provider: string | null
+          staff_id: string
+          status: string
+          training_name: string
+          training_type: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          certificate_url?: string | null
+          completion_date?: string | null
+          created_at?: string
+          created_by?: string | null
+          expiry_date?: string | null
+          id?: string
+          notes?: string | null
+          provider?: string | null
+          staff_id: string
+          status?: string
+          training_name: string
+          training_type?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          certificate_url?: string | null
+          completion_date?: string | null
+          created_at?: string
+          created_by?: string | null
+          expiry_date?: string | null
+          id?: string
+          notes?: string | null
+          provider?: string | null
+          staff_id?: string
+          status?: string
+          training_name?: string
+          training_type?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_records_staff_id_fkey"
             columns: ["staff_id"]
             isOneToOne: false
             referencedRelation: "staff"

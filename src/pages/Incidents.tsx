@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { AppLayout } from "@/components/AppLayout";
-import { Plus, AlertTriangle, AlertCircle, Shield, Pill, Loader2, X } from "lucide-react";
+import { Plus, AlertTriangle, AlertCircle, Shield, Pill, Loader2, X, Lock } from "lucide-react";
 import { motion } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,6 +14,7 @@ const typeIcons: Record<string, any> = {
   behavior: AlertCircle,
   injury: AlertTriangle,
   safeguarding: Shield,
+  near_miss: AlertCircle,
 };
 
 const INCIDENT_TYPES = [
@@ -22,10 +23,12 @@ const INCIDENT_TYPES = [
   { value: "behavior", label: "Behavioural Incident" },
   { value: "safeguarding", label: "Safeguarding Concern" },
   { value: "property_damage", label: "Property Damage" },
+  { value: "near_miss", label: "Near Miss" },
   { value: "other", label: "Other" },
 ];
 
 export default function Incidents() {
+  const { isAdmin } = useAuth();
   const [showAdd, setShowAdd] = useState(false);
 
   const { data: incidents = [], isLoading } = useQuery({
@@ -45,7 +48,12 @@ export default function Incidents() {
     <AppLayout title="Incident Reports">
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">{incidents.length} incidents</p>
+          <div className="flex items-center gap-2">
+            <p className="text-sm text-muted-foreground">{incidents.length} incidents</p>
+            <span className="text-[10px] text-muted-foreground bg-muted px-2 py-0.5 rounded-full flex items-center gap-1">
+              <Lock className="h-2.5 w-2.5" /> Immutable after submission
+            </span>
+          </div>
           <button
             onClick={() => setShowAdd(true)}
             className="h-9 px-4 rounded-lg bg-destructive text-destructive-foreground text-sm font-medium flex items-center gap-2 hover:opacity-90 transition-opacity"
@@ -80,13 +88,18 @@ export default function Incidents() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2 flex-wrap">
                         <div>
-                          <p className="text-sm font-semibold text-card-foreground capitalize">{inc.incident_type.replace("_", " ")}</p>
+                          <p className="text-sm font-semibold text-card-foreground capitalize">{inc.incident_type.replace(/_/g, " ")}</p>
                           <p className="text-xs text-muted-foreground">
-                            {fullName(inc.client)} · Reported by {fullName(inc.reporter)} ·{" "}
-                            {format(new Date(inc.incident_date), "MMM d, yyyy")}
+                            {fullName(inc.client)} · Reported by {fullName(inc.reporter)} · {format(new Date(inc.incident_date), "MMM d, yyyy")}
                           </p>
                         </div>
                         <div className="flex items-center gap-2">
+                          {inc.injury_occurred && (
+                            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-destructive/10 text-destructive">Injury</span>
+                          )}
+                          {inc.medical_attention_required && (
+                            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-destructive/10 text-destructive">Medical</span>
+                          )}
                           <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
                             inc.severity === "critical" || inc.severity === "high" ? "bg-destructive/10 text-destructive" :
                             inc.severity === "medium" ? "bg-warning/10 text-warning" : "bg-muted text-muted-foreground"
@@ -98,6 +111,12 @@ export default function Incidents() {
                         </div>
                       </div>
                       <p className="text-sm text-muted-foreground mt-2">{inc.description}</p>
+                      {inc.immediate_action && (
+                        <p className="text-xs text-muted-foreground mt-1"><strong className="text-card-foreground">Action taken:</strong> {inc.immediate_action}</p>
+                      )}
+                      {inc.location && (
+                        <p className="text-xs text-muted-foreground mt-1"><strong className="text-card-foreground">Location:</strong> {inc.location}</p>
+                      )}
                     </div>
                   </div>
                 </motion.div>
@@ -141,6 +160,8 @@ function AddIncidentDialog({ onClose }: { onClose: () => void }) {
     location: "",
     immediate_action: "",
     incident_date: new Date().toISOString().split("T")[0],
+    injury_occurred: false,
+    medical_attention_required: false,
   });
 
   const mutation = useMutation({
@@ -156,11 +177,14 @@ function AddIncidentDialog({ onClose }: { onClose: () => void }) {
         immediate_action: form.immediate_action.trim() || null,
         incident_date: form.incident_date,
         reported_by: staffProfile,
+        created_by: user?.id,
+        injury_occurred: form.injury_occurred,
+        medical_attention_required: form.medical_attention_required,
       });
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Incident reported");
+      toast.success("Incident reported — this record is now immutable");
       queryClient.invalidateQueries({ queryKey: ["incidents"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard-incidents"] });
       queryClient.invalidateQueries({ queryKey: ["notif-incidents"] });
@@ -204,9 +228,7 @@ function AddIncidentDialog({ onClose }: { onClose: () => void }) {
               className="w-full h-9 rounded-lg border bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
               <option value="">Select client (optional)...</option>
               {clientList.map((c: any) => (
-                <option key={c.id} value={c.id}>
-                  {c.preferred_name ? `${c.preferred_name} ${c.last_name}` : `${c.first_name} ${c.last_name}`}
-                </option>
+                <option key={c.id} value={c.id}>{c.preferred_name ? `${c.preferred_name} ${c.last_name}` : `${c.first_name} ${c.last_name}`}</option>
               ))}
             </select>
           </div>
@@ -229,6 +251,19 @@ function AddIncidentDialog({ onClose }: { onClose: () => void }) {
             <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Immediate Action Taken</label>
             <textarea value={form.immediate_action} onChange={(e) => setForm({ ...form, immediate_action: e.target.value })} placeholder="What was done immediately?" rows={2}
               className="w-full rounded-lg border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none" />
+          </div>
+          <div className="flex gap-4">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" checked={form.injury_occurred} onChange={(e) => setForm({ ...form, injury_occurred: e.target.checked })} className="rounded border-border" />
+              <span className="text-xs text-muted-foreground">Injury occurred</span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" checked={form.medical_attention_required} onChange={(e) => setForm({ ...form, medical_attention_required: e.target.checked })} className="rounded border-border" />
+              <span className="text-xs text-muted-foreground">Medical attention required</span>
+            </label>
+          </div>
+          <div className="rounded-lg bg-warning/5 border border-warning/20 p-3">
+            <p className="text-[10px] text-warning flex items-center gap-1"><Lock className="h-3 w-3" /> Once submitted, this incident report cannot be modified.</p>
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <button type="button" onClick={onClose} className="h-9 px-4 rounded-lg border text-sm font-medium text-foreground hover:bg-secondary transition-colors">Cancel</button>
