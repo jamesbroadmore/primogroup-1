@@ -27,6 +27,14 @@ const CONTENT: Record<Exclude<SettingsSection, "main">, React.FC> = {
   data: DataExportSettings,
 };
 
+const ICON_GRADIENTS: Record<string, string> = {
+  users: "linear-gradient(135deg, #a78bfa, #8b5cf6)",
+  organisation: "linear-gradient(135deg, #60a5fa, #3b82f6)",
+  security: "linear-gradient(135deg, #4ade80, #22c55e)",
+  notifications: "linear-gradient(135deg, #fbbf24, #f59e0b)",
+  data: "linear-gradient(135deg, #2dd4bf, #14b8a6)",
+};
+
 export default function SettingsPage() {
   const [active, setActive] = useState<SettingsSection>("main");
   const { isAdmin } = useAuth();
@@ -59,16 +67,19 @@ export default function SettingsPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.05 }}
             onClick={() => setActive(s.key)}
-            className="rounded-xl bg-card p-5 shadow-card border border-border/50 flex items-center gap-4 cursor-pointer hover:shadow-elevated transition-shadow group"
+            className="rounded-2xl bg-white p-5 shadow-sm border border-border/50 flex items-center gap-4 cursor-pointer hover:shadow-md hover:border-primary/20 transition-all group"
           >
-            <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-              <s.icon className="h-5 w-5 text-primary" />
+            <div
+              className="h-11 w-11 rounded-2xl flex items-center justify-center shrink-0 shadow-sm"
+              style={{ background: ICON_GRADIENTS[s.key] || "linear-gradient(135deg, #a78bfa, #8b5cf6)" }}
+            >
+              <s.icon className="h-5 w-5 text-white" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-card-foreground">{s.title}</p>
+              <p className="text-sm font-bold text-foreground">{s.title}</p>
               <p className="text-xs text-muted-foreground mt-0.5">{s.desc}</p>
             </div>
-            <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors shrink-0" />
+            <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-purple-500 transition-colors shrink-0" />
           </motion.div>
         ))}
       </div>

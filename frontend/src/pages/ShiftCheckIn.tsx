@@ -7,11 +7,12 @@ import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   MapPin, Clock, LogIn, LogOut, Navigation, CheckCircle2,
-  Loader2, History, FileText, AlertTriangle,
+  Loader2, History, FileText, AlertTriangle, MapPinCheck, User,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { getPerthDate, formatPerthTime } from "@/lib/perth-time";
 import { fullName } from "@/lib/display-names";
+import { Avatar } from "@/components/ui-kit";
 
 interface GpsPosition { lat: number; lng: number; accuracy: number; }
 
@@ -65,7 +66,6 @@ export default function ShiftCheckIn() {
 
   useEffect(() => { requestLocation(); }, [requestLocation]);
 
-  // Fetch client list for dropdown
   const { data: clientList = [] } = useQuery({
     queryKey: ["client-list-checkin"],
     queryFn: async () => {
@@ -133,7 +133,6 @@ export default function ShiftCheckIn() {
       if (!position) throw new Error("GPS location required. Please enable location access.");
       if (!clockOutNote.trim()) throw new Error("A case note is required before clocking out.");
 
-      // Save the case note
       if (staffProfile?.staffId && clientId) {
         const { error: noteError } = await supabase.from("case_notes").insert({
           client_id: clientId,
@@ -146,17 +145,12 @@ export default function ShiftCheckIn() {
 
       const { error } = await supabase
         .from("shift_checkins")
-        .update({
-          check_out_time: new Date().toISOString(),
-          check_out_lat: position.lat,
-          check_out_lng: position.lng,
-          status: "checked_out",
-        })
+        .update({ check_out_time: new Date().toISOString(), check_out_lat: position.lat, check_out_lng: position.lng, status: "checked_out" })
         .eq("id", activeCheckin.id);
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Clocked out successfully! Case note saved.");
+      toast.success("Clocked out! Case note saved.");
       queryClient.invalidateQueries({ queryKey: ["shift-checkins-today"] });
       queryClient.invalidateQueries({ queryKey: ["shift-checkins-history"] });
       queryClient.invalidateQueries({ queryKey: ["case-notes"] });
@@ -171,131 +165,171 @@ export default function ShiftCheckIn() {
 
   return (
     <AppLayout title="Shift Check-In">
-      <div className="max-w-2xl mx-auto space-y-6">
-        {/* GPS Status */}
+      <div className="max-w-2xl mx-auto space-y-5">
+
+        {/* GPS Location Card */}
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
-          className="rounded-xl bg-card p-4 shadow-card border border-border/50">
-          <div className="flex items-center justify-between">
+          className="rounded-2xl bg-white border border-border/50 shadow-sm overflow-hidden"
+        >
+          <div className="h-1.5" style={{
+            background: position ? "linear-gradient(90deg, #4ade80, #22c55e)" :
+              gpsError ? "linear-gradient(90deg, #f87171, #ef4444)" : "linear-gradient(90deg, #94a3b8, #64748b)"
+          }} />
+          <div className="p-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className={`h-10 w-10 rounded-lg flex items-center justify-center ${
-                position ? "bg-success/10 text-success" : gpsError ? "bg-destructive/10 text-destructive" : "bg-muted text-muted-foreground"
-              }`}>
-                {gpsLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Navigation className="h-5 w-5" />}
+              <div className={`h-11 w-11 rounded-2xl flex items-center justify-center shadow-sm ${
+                position ? "" : gpsError ? "" : ""
+              }`} style={{
+                background: position ? "linear-gradient(135deg, #4ade80, #22c55e)" :
+                  gpsError ? "linear-gradient(135deg, #f87171, #ef4444)" : "linear-gradient(135deg, #94a3b8, #64748b)"
+              }}>
+                {gpsLoading ? <Loader2 className="h-5 w-5 text-white animate-spin" /> : <Navigation className="h-5 w-5 text-white" />}
               </div>
               <div>
-                <p className="text-sm font-medium text-card-foreground">
-                  {gpsLoading ? "Getting location..." : position ? "Location captured" : "Location unavailable"}
+                <p className="text-sm font-bold text-foreground">
+                  {gpsLoading ? "Getting location..." : position ? "Location captured ✓" : "Location unavailable"}
                 </p>
                 <p className="text-xs text-muted-foreground">
                   {position
                     ? `${position.lat.toFixed(5)}, ${position.lng.toFixed(5)} (±${Math.round(position.accuracy)}m)`
-                    : gpsError || "Enable location services"}
+                    : gpsError || "Enable location services to continue"}
                 </p>
               </div>
             </div>
-            <button onClick={requestLocation} className="text-xs text-primary hover:underline font-medium">Refresh</button>
+            <button
+              onClick={requestLocation}
+              className="text-xs font-semibold text-purple-600 bg-purple-50 border border-purple-200 hover:bg-purple-100 transition-colors px-3 py-1.5 rounded-lg"
+            >
+              Refresh
+            </button>
           </div>
         </motion.div>
 
-        {/* Staff Identity */}
+        {/* Staff Identity Card */}
         {staffProfile && (
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.03 }}
-            className={`rounded-xl p-4 border ${staffProfile.staffId ? "bg-card border-border/50" : "bg-destructive/5 border-destructive/20"}`}>
-            <p className="text-sm font-medium text-card-foreground">
-              Signed in as: <span className="font-semibold">{staffProfile.staffName}</span>
-            </p>
-            {!staffProfile.staffId && (
-              <p className="text-xs text-destructive mt-1">Your account is not linked to a staff record. Contact your administrator.</p>
-            )}
+            className={`rounded-2xl border shadow-sm p-4 flex items-center gap-3 ${
+              staffProfile.staffId
+                ? "bg-white border-border/50"
+                : "bg-red-50 border-red-200"
+            }`}
+          >
+            <div className="h-10 w-10 rounded-xl flex items-center justify-center shrink-0" style={{
+              background: staffProfile.staffId
+                ? "linear-gradient(135deg, #a78bfa, #8b5cf6)"
+                : "linear-gradient(135deg, #f87171, #ef4444)"
+            }}>
+              <User className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-foreground">{staffProfile.staffName}</p>
+              {!staffProfile.staffId ? (
+                <p className="text-xs text-red-600 mt-0.5">Account not linked to staff record — contact admin</p>
+              ) : (
+                <p className="text-xs text-muted-foreground">Linked staff account</p>
+              )}
+            </div>
           </motion.div>
         )}
 
-        {/* Check-In / Check-Out Card */}
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
-          className="rounded-xl bg-card p-6 shadow-card border border-border/50">
+        {/* Main Check-In / Check-Out Panel */}
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.06 }}
+          className="rounded-2xl bg-white border border-border/50 shadow-sm overflow-hidden"
+        >
           {activeCheckin ? (
-            <div className="space-y-5">
-              <div className="flex items-center gap-3">
-                <div className="h-12 w-12 rounded-full bg-success/10 flex items-center justify-center">
-                  <CheckCircle2 className="h-6 w-6 text-success" />
+            <div>
+              {/* Active shift header */}
+              <div className="p-5 flex items-center gap-4" style={{ background: "linear-gradient(135deg, #dcfce7, #bbf7d0)" }}>
+                <div className="h-14 w-14 rounded-2xl flex items-center justify-center shadow-md" style={{ background: "linear-gradient(135deg, #4ade80, #22c55e)" }}>
+                  <CheckCircle2 className="h-7 w-7 text-white" />
                 </div>
                 <div>
-                  <p className="text-lg font-semibold text-card-foreground">Currently Clocked In</p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-lg font-bold text-emerald-800">Currently On Shift</p>
+                  <p className="text-sm text-emerald-700">
                     {activeCheckin.staff_name} · Since {formatPerthTime(activeCheckin.check_in_time!)}
                   </p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div className="rounded-lg bg-secondary/50 p-3">
-                  <p className="text-xs text-muted-foreground">Duration</p>
-                  <p className="font-medium text-card-foreground">{formatDistanceToNow(new Date(activeCheckin.check_in_time!))}</p>
+              <div className="p-5 space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-2xl bg-slate-50 border border-slate-200 p-3">
+                    <p className="text-xs text-muted-foreground mb-0.5">Duration</p>
+                    <p className="text-sm font-bold text-foreground">{formatDistanceToNow(new Date(activeCheckin.check_in_time!))}</p>
+                  </div>
+                  <div className="rounded-2xl bg-slate-50 border border-slate-200 p-3">
+                    <p className="text-xs text-muted-foreground mb-0.5">Client</p>
+                    <p className="text-sm font-bold text-foreground truncate">{activeCheckin.client_name || "—"}</p>
+                  </div>
                 </div>
-                <div className="rounded-lg bg-secondary/50 p-3">
-                  <p className="text-xs text-muted-foreground">Client</p>
-                  <p className="font-medium text-card-foreground">{activeCheckin.client_name || "—"}</p>
+
+                {!showClockOutForm ? (
+                  <button
+                    onClick={() => setShowClockOutForm(true)}
+                    disabled={!position}
+                    className="w-full h-14 rounded-2xl text-white text-base font-bold flex items-center justify-center gap-3 hover:opacity-90 transition-all disabled:opacity-50 shadow-lg"
+                    style={{ background: "linear-gradient(135deg, #f87171, #ef4444)" }}
+                  >
+                    <LogOut className="h-5 w-5" /> Clock Out
+                  </button>
+                ) : (
+                  <div className="space-y-4 rounded-2xl border border-amber-200 bg-amber-50 p-4">
+                    <div className="flex items-center gap-2">
+                      <FileText className="h-5 w-5 text-amber-600" />
+                      <p className="text-sm font-bold text-amber-800">Case Note Required to Clock Out</p>
+                    </div>
+                    <p className="text-xs text-amber-700">
+                      A case note is <strong>compulsory</strong> after every shift. Describe support provided, observations, and client wellbeing.
+                    </p>
+                    <textarea
+                      value={clockOutNote}
+                      onChange={(e) => setClockOutNote(e.target.value)}
+                      placeholder="Describe the support provided, client mood, activities completed..."
+                      rows={4}
+                      maxLength={2000}
+                      className="w-full rounded-xl border border-amber-200 bg-white px-3 py-2.5 text-sm text-foreground placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-400/50 resize-none"
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setShowClockOutForm(false)}
+                        className="flex-1 h-10 rounded-xl border border-slate-200 text-sm font-medium text-foreground hover:bg-slate-50 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={() => clockOut.mutate()}
+                        disabled={clockOut.isPending || !position || !clockOutNote.trim()}
+                        className="flex-1 h-10 rounded-xl text-white text-sm font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50 shadow-md"
+                        style={{ background: "linear-gradient(135deg, #f87171, #ef4444)" }}
+                      >
+                        {clockOut.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogOut className="h-4 w-4" />}
+                        Submit & Clock Out
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div>
+              {/* Start shift header */}
+              <div className="p-5 flex items-center gap-4" style={{ background: "linear-gradient(135deg, #ede9fe, #ddd6fe)" }}>
+                <div className="h-14 w-14 rounded-2xl flex items-center justify-center shadow-md" style={{ background: "linear-gradient(135deg, #a78bfa, #8b5cf6)" }}>
+                  <MapPinCheck className="h-7 w-7 text-white" />
+                </div>
+                <div>
+                  <p className="text-lg font-bold text-purple-800">Start Your Shift</p>
+                  <p className="text-sm text-purple-600">Select client and confirm location</p>
                 </div>
               </div>
 
-              {/* Mandatory case note before clock-out */}
-              {!showClockOutForm ? (
-                <button
-                  onClick={() => setShowClockOutForm(true)}
-                  disabled={!position}
-                  className="w-full h-14 rounded-xl bg-destructive text-destructive-foreground text-lg font-semibold flex items-center justify-center gap-3 hover:opacity-90 transition-opacity disabled:opacity-50"
-                >
-                  <LogOut className="h-5 w-5" /> Clock Out
-                </button>
-              ) : (
-                <div className="space-y-3 rounded-lg border border-warning/30 bg-warning/5 p-4">
-                  <div className="flex items-center gap-2">
-                    <FileText className="h-4 w-4 text-warning" />
-                    <p className="text-sm font-semibold text-card-foreground">Case Note Required</p>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    A case note is <strong>compulsory</strong> after every shift. Describe the support provided, observations, and client wellbeing.
-                  </p>
-                  <textarea
-                    value={clockOutNote}
-                    onChange={(e) => setClockOutNote(e.target.value)}
-                    placeholder="Describe the support provided, client mood, activities completed..."
-                    rows={4}
-                    maxLength={2000}
-                    className="w-full rounded-lg border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
-                  />
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => setShowClockOutForm(false)}
-                      className="flex-1 h-10 rounded-lg border text-sm font-medium text-foreground hover:bg-secondary transition-colors"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={() => clockOut.mutate()}
-                      disabled={clockOut.isPending || !position || !clockOutNote.trim()}
-                      className="flex-1 h-10 rounded-lg bg-destructive text-destructive-foreground text-sm font-semibold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50"
-                    >
-                      {clockOut.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogOut className="h-4 w-4" />}
-                      Submit Note & Clock Out
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <h2 className="text-lg font-semibold text-card-foreground flex items-center gap-2">
-                <Clock className="h-5 w-5 text-primary" /> Start Your Shift
-              </h2>
-
-              <div className="space-y-3">
+              <div className="p-5 space-y-4">
                 <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-1 block">Client *</label>
+                  <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-2 block">Client <span className="text-red-400">*</span></label>
                   <select
                     value={clientId}
                     onChange={(e) => setClientId(e.target.value)}
-                    className="w-full h-10 rounded-lg border bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    className="w-full h-11 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-300 transition-all appearance-none"
                   >
                     <option value="">Select client...</option>
                     {clientList.map((c) => (
@@ -305,77 +339,90 @@ export default function ShiftCheckIn() {
                     ))}
                   </select>
                   {!clientId && (
-                    <p className="text-[10px] text-warning mt-1 flex items-center gap-1">
-                      <AlertTriangle className="h-3 w-3" /> A client must be selected to clock in
+                    <p className="text-[11px] text-amber-600 mt-1.5 flex items-center gap-1">
+                      <AlertTriangle className="h-3 w-3" /> Client selection is required to clock in
                     </p>
                   )}
                 </div>
+
                 <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-1 block">Notes</label>
+                  <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-2 block">Start Notes</label>
                   <textarea
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     placeholder="Any notes for this shift..."
                     rows={2}
                     maxLength={1000}
-                    className="w-full rounded-lg border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+                    className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-foreground placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-400/50 resize-none"
                   />
                 </div>
-              </div>
 
-              <button
-                onClick={() => clockIn.mutate()}
-                disabled={clockIn.isPending || !canClockIn}
-                className="w-full h-14 rounded-xl bg-primary text-primary-foreground text-lg font-semibold flex items-center justify-center gap-3 hover:opacity-90 transition-opacity disabled:opacity-50"
-              >
-                {clockIn.isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : <LogIn className="h-5 w-5" />}
-                Clock In
-              </button>
+                <button
+                  onClick={() => clockIn.mutate()}
+                  disabled={clockIn.isPending || !canClockIn}
+                  className="w-full h-14 rounded-2xl text-white text-base font-bold flex items-center justify-center gap-3 hover:opacity-90 transition-all disabled:opacity-50 shadow-lg"
+                  style={{ background: "linear-gradient(135deg, #a78bfa, #8b5cf6)" }}
+                >
+                  {clockIn.isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : <LogIn className="h-5 w-5" />}
+                  Clock In
+                </button>
+              </div>
             </div>
           )}
         </motion.div>
 
-        {/* Recent History */}
+        {/* Today's Check-In Summary */}
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-          className="rounded-xl bg-card p-5 shadow-card border border-border/50">
-          <h2 className="text-sm font-semibold text-card-foreground mb-4 flex items-center gap-2">
-            <History className="h-4 w-4 text-muted-foreground" /> Recent Check-Ins
-          </h2>
+          className="rounded-2xl bg-white border border-border/50 shadow-sm overflow-hidden"
+        >
+          <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
+            <div className="flex items-center gap-2">
+              <div className="h-7 w-7 rounded-xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, #60a5fa, #3b82f6)" }}>
+                <History className="h-3.5 w-3.5 text-white" />
+              </div>
+              <h3 className="text-sm font-bold text-foreground">Recent Check-Ins</h3>
+            </div>
+            <span className="text-xs text-muted-foreground">{recentHistory.length} entries</span>
+          </div>
 
           {isLoading ? (
             <div className="flex items-center justify-center py-8"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
           ) : recentHistory.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-8">No check-ins yet</p>
           ) : (
-            <div className="space-y-2">
+            <div className="divide-y divide-slate-100">
               <AnimatePresence>
                 {recentHistory.map((checkin: any) => (
-                  <motion.div key={checkin.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
-                    className="flex items-center justify-between py-3 px-3 rounded-lg bg-secondary/50">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className={`h-8 w-8 rounded-full flex items-center justify-center shrink-0 ${
-                        checkin.status === "checked_in" ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"
-                      }`}>
-                        {checkin.status === "checked_in" ? <CheckCircle2 className="h-4 w-4" /> : <LogOut className="h-4 w-4" />}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-card-foreground truncate">
-                          {checkin.staff_name}
-                          {checkin.client_name && <span className="text-muted-foreground font-normal"> → {checkin.client_name}</span>}
-                        </p>
-                        <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-                          <span>{formatPerthTime(checkin.check_in_time!)}</span>
-                          {checkin.check_out_time && <span>→ {formatPerthTime(checkin.check_out_time)}</span>}
-                          {checkin.check_in_lat && (
-                            <span className="flex items-center gap-0.5"><MapPin className="h-2.5 w-2.5" />GPS</span>
-                          )}
-                        </div>
+                  <motion.div
+                    key={checkin.id}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="flex items-center gap-3 px-5 py-3.5 hover:bg-slate-50/50 transition-colors"
+                  >
+                    <Avatar name={checkin.staff_name || "??"} size="sm" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-foreground truncate">
+                        {checkin.staff_name}
+                        {checkin.client_name && (
+                          <span className="text-muted-foreground font-normal"> → {checkin.client_name}</span>
+                        )}
+                      </p>
+                      <div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-0.5">
+                        <span>{formatPerthTime(checkin.check_in_time!)}</span>
+                        {checkin.check_out_time && <span>→ {formatPerthTime(checkin.check_out_time)}</span>}
+                        {checkin.check_in_lat && (
+                          <span className="flex items-center gap-0.5 text-teal-500">
+                            <MapPin className="h-2.5 w-2.5" /> GPS
+                          </span>
+                        )}
                       </div>
                     </div>
-                    <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full shrink-0 ${
-                      checkin.status === "checked_in" ? "bg-success/10 text-success" : "bg-muted text-muted-foreground"
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${
+                      checkin.status === "checked_in"
+                        ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                        : "bg-slate-100 text-slate-600"
                     }`}>
-                      {checkin.status === "checked_in" ? "Active" : "Completed"}
+                      {checkin.status === "checked_in" ? "Active" : "Done"}
                     </span>
                   </motion.div>
                 ))}

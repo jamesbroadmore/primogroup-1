@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { format } from "date-fns";
+import { StatusBadge } from "@/components/ui-kit";
 
 const RECORD_TYPES = [
   { value: "worker_screening", label: "NDIS Worker Screening" },
@@ -20,18 +21,6 @@ const RECORD_TYPES = [
   { value: "drivers_licence", label: "Driver's Licence" },
   { value: "other", label: "Other" },
 ];
-
-function StatusBadge({ status }: { status: string }) {
-  const styles = status === "current" ? "bg-success/10 text-success" :
-    status === "expiring_soon" ? "bg-warning/10 text-warning" : "bg-destructive/10 text-destructive";
-  const Icon = status === "current" ? CheckCircle : status === "expiring_soon" ? AlertTriangle : XCircle;
-  const label = status === "current" ? "Valid" : status === "expiring_soon" ? "Expiring" : status === "expired" ? "Expired" : status;
-  return (
-    <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full ${styles}`}>
-      <Icon className="h-3 w-3" />{label}
-    </span>
-  );
-}
 
 export default function MyCompliance() {
   const { user } = useAuth();
@@ -84,27 +73,39 @@ export default function MyCompliance() {
   return (
     <AppLayout title="My Compliance">
       <div className="space-y-4">
-        {/* Progress */}
+        {/* Progress card */}
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-          className="rounded-xl bg-card p-5 shadow-card border border-border/50">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-semibold text-card-foreground">Compliance Status</h3>
-            <span className="text-xs text-muted-foreground">{required.length - missing.length}/{required.length} complete</span>
+          className="rounded-2xl bg-white border border-border/50 shadow-sm overflow-hidden">
+          <div className="h-1.5" style={{
+            background: missing.length === 0
+              ? "linear-gradient(90deg, #4ade80, #22c55e)"
+              : missing.length > 2
+              ? "linear-gradient(90deg, #f87171, #ef4444)"
+              : "linear-gradient(90deg, #fbbf24, #f59e0b)"
+          }} />
+          <div className="p-5">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-bold text-foreground">Compliance Status</h3>
+              <span className="text-xs font-semibold text-muted-foreground">{required.length - missing.length}/{required.length} complete</span>
+            </div>
+            <div className="h-2.5 rounded-full bg-slate-100 overflow-hidden mb-3">
+              <div
+                className="h-full rounded-full transition-all"
+                style={{
+                  width: `${((required.length - missing.length) / required.length) * 100}%`,
+                  background: missing.length === 0 ? "linear-gradient(90deg, #4ade80, #22c55e)" :
+                    missing.length > 2 ? "linear-gradient(90deg, #f87171, #ef4444)" : "linear-gradient(90deg, #fbbf24, #f59e0b)"
+                }}
+              />
+            </div>
+            {missing.length > 0 ? (
+              <p className="text-xs text-red-600 font-medium">
+                Missing: {missing.map(m => RECORD_TYPES.find(r => r.value === m)?.label || m).join(", ")}
+              </p>
+            ) : (
+              <p className="text-xs text-emerald-600 font-semibold">✓ All required certifications are up to date</p>
+            )}
           </div>
-          <div className="h-2 rounded-full bg-muted overflow-hidden mb-3">
-            <div
-              className={`h-full rounded-full transition-all ${missing.length === 0 ? "bg-success" : missing.length > 2 ? "bg-destructive" : "bg-warning"}`}
-              style={{ width: `${((required.length - missing.length) / required.length) * 100}%` }}
-            />
-          </div>
-          {missing.length > 0 && (
-            <p className="text-xs text-destructive">
-              Missing: {missing.map(m => RECORD_TYPES.find(r => r.value === m)?.label || m).join(", ")}
-            </p>
-          )}
-          {missing.length === 0 && (
-            <p className="text-xs text-success">All required certifications are up to date ✓</p>
-          )}
         </motion.div>
 
         {/* Upload button */}
@@ -112,7 +113,8 @@ export default function MyCompliance() {
           <p className="text-sm text-muted-foreground">{records.length} records</p>
           <button
             onClick={() => setShowUpload(true)}
-            className="h-9 px-4 rounded-lg bg-primary text-primary-foreground text-sm font-medium flex items-center gap-2 hover:opacity-90 transition-opacity"
+            className="h-9 px-4 rounded-xl text-white text-sm font-bold flex items-center gap-2 hover:opacity-90 transition-all shadow-md"
+            style={{ background: "linear-gradient(135deg, #4ade80, #22c55e)" }}
           >
             <Upload className="h-4 w-4" /> Upload Certificate
           </button>
@@ -126,31 +128,35 @@ export default function MyCompliance() {
         {isLoading ? (
           <div className="flex justify-center py-16"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
         ) : records.length === 0 ? (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="rounded-xl bg-card p-12 shadow-card border border-border/50 text-center">
-            <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
-            <p className="text-muted-foreground text-sm">No certificates uploaded yet.</p>
-            <p className="text-muted-foreground text-xs mt-1">Upload your certifications to stay compliant.</p>
-          </motion.div>
+          <div className="rounded-2xl bg-white border border-border/50 shadow-sm p-12 text-center">
+            <div className="h-14 w-14 rounded-3xl bg-slate-100 flex items-center justify-center mx-auto mb-3">
+              <Upload className="h-7 w-7 text-slate-300" />
+            </div>
+            <p className="text-sm font-semibold text-foreground">No certificates uploaded yet</p>
+            <p className="text-xs text-muted-foreground mt-1">Upload your certifications to stay compliant.</p>
+          </div>
         ) : (
           <div className="space-y-3">
             {records.map((r: any, i: number) => (
               <motion.div key={r.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}
-                className="rounded-xl bg-card p-4 shadow-card border border-border/50 flex items-center gap-3">
-                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                  <FileText className="h-5 w-5 text-primary" />
+                className="rounded-2xl bg-white border border-border/50 shadow-sm p-4 flex items-center gap-4 hover:shadow-md transition-shadow">
+                <div className="h-11 w-11 rounded-2xl flex items-center justify-center shrink-0 shadow-sm" style={{ background: "linear-gradient(135deg, #4ade80, #22c55e)" }}>
+                  <FileText className="h-5 w-5 text-white" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-card-foreground">{r.record_name}</p>
+                  <p className="text-sm font-bold text-foreground">{r.record_name}</p>
                   <p className="text-xs text-muted-foreground">
                     {RECORD_TYPES.find(t => t.value === r.record_type)?.label || r.record_type}
                     {r.expiry_date && ` · Expires ${format(new Date(r.expiry_date), "d MMM yyyy")}`}
                   </p>
                 </div>
-                <StatusBadge status={r.status} />
-                {r.document_url && (
-                  <a href={r.document_url} target="_blank" rel="noopener noreferrer"
-                    className="text-xs text-primary hover:underline shrink-0">View</a>
-                )}
+                <div className="flex items-center gap-2">
+                  <StatusBadge status={r.status} />
+                  {r.document_url && (
+                    <a href={r.document_url} target="_blank" rel="noopener noreferrer"
+                      className="text-xs text-purple-600 font-semibold hover:underline">View</a>
+                  )}
+                </div>
               </motion.div>
             ))}
           </div>
@@ -229,61 +235,66 @@ function UploadCertDialog({ staffId, onClose }: { staffId: string; onClose: () =
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4" onClick={onClose}>
       <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-xl bg-card shadow-xl border border-border"
+        className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-3xl bg-white shadow-2xl border border-white/80"
         onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between p-5 border-b">
-          <h2 className="text-lg font-semibold text-card-foreground">Upload Certificate</h2>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="h-5 w-5" /></button>
+        <div className="h-1.5" style={{ background: "linear-gradient(90deg, #4ade80, #22c55e)" }} />
+        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100">
+          <h2 className="text-lg font-bold text-slate-800">Upload Certificate</h2>
+          <button onClick={onClose} className="h-8 w-8 rounded-xl flex items-center justify-center text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors">
+            <X className="h-4 w-4" />
+          </button>
         </div>
-        <form onSubmit={handleSubmit} className="p-5 space-y-4">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Certificate Type</label>
+            <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5 block">Certificate Type</label>
             <select value={form.record_type} onChange={(e) => handleTypeChange(e.target.value)}
-              className="w-full h-9 rounded-lg border bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
+              className="w-full h-10 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-400/50 focus:border-emerald-300 transition-all">
               {RECORD_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
             </select>
           </div>
           <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Record Name *</label>
+            <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5 block">Record Name <span className="text-red-400">*</span></label>
             <input type="text" value={form.record_name} onChange={(e) => setForm({ ...form, record_name: e.target.value })}
-              className="w-full h-9 rounded-lg border bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
+              className="w-full h-10 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-400/50 transition-all" />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Issue Date</label>
+              <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5 block">Issue Date</label>
               <input type="date" value={form.issue_date} onChange={(e) => setForm({ ...form, issue_date: e.target.value })}
-                className="w-full h-9 rounded-lg border bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
+                className="w-full h-10 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400/50 transition-all" />
             </div>
             <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Expiry Date</label>
+              <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5 block">Expiry Date</label>
               <input type="date" value={form.expiry_date} onChange={(e) => setForm({ ...form, expiry_date: e.target.value })}
-                className="w-full h-9 rounded-lg border bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
+                className="w-full h-10 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400/50 transition-all" />
             </div>
           </div>
           <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Upload Document</label>
-            <label className="flex items-center justify-center gap-2 h-20 rounded-lg border-2 border-dashed bg-background cursor-pointer hover:border-primary/50 transition-colors">
+            <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5 block">Upload Document</label>
+            <label className="flex items-center justify-center gap-2 h-20 rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 cursor-pointer hover:border-emerald-400/50 hover:bg-emerald-50/30 transition-all">
               <input type="file" accept=".pdf,.jpg,.jpeg,.png,.webp" onChange={(e) => setFile(e.target.files?.[0] || null)} className="hidden" />
               {file ? (
-                <span className="text-sm text-card-foreground">{file.name}</span>
+                <span className="text-sm text-slate-700 font-medium">{file.name}</span>
               ) : (
-                <span className="text-sm text-muted-foreground flex items-center gap-2">
+                <span className="text-sm text-slate-400 flex items-center gap-2">
                   <Upload className="h-4 w-4" /> Click to upload (PDF, JPG, PNG)
                 </span>
               )}
             </label>
           </div>
           <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Notes</label>
+            <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-1.5 block">Notes</label>
             <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })}
               placeholder="Any additional details..." rows={2}
-              className="w-full rounded-lg border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none" />
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/50 resize-none" />
           </div>
           <div className="flex justify-end gap-2 pt-2">
-            <button type="button" onClick={onClose} className="h-9 px-4 rounded-lg border text-sm font-medium text-foreground hover:bg-secondary transition-colors">Cancel</button>
-            <button type="submit" disabled={uploading} className="h-9 px-4 rounded-lg bg-primary text-primary-foreground text-sm font-medium flex items-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50">
+            <button type="button" onClick={onClose} className="h-10 px-4 rounded-xl border text-sm font-medium text-foreground hover:bg-secondary transition-colors">Cancel</button>
+            <button type="submit" disabled={uploading}
+              className="h-10 px-5 rounded-xl text-white text-sm font-bold flex items-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50 shadow-md"
+              style={{ background: "linear-gradient(135deg, #4ade80, #22c55e)" }}>
               {uploading && <Loader2 className="h-4 w-4 animate-spin" />} Upload
             </button>
           </div>

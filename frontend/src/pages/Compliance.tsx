@@ -106,18 +106,24 @@ export default function Compliance() {
     <AppLayout title="Compliance & Governance">
       <div className="space-y-4">
         {/* Tab navigation */}
-        <div className="flex flex-wrap gap-1 rounded-lg bg-secondary/50 p-1 w-fit">
+        <div className="flex flex-wrap gap-2">
           {TABS.map((tab) => {
             const Icon = tab.icon;
+            const gradients: Record<string, string> = {
+              records: "linear-gradient(135deg, #4ade80, #22c55e)",
+              flags: "linear-gradient(135deg, #60a5fa, #3b82f6)",
+              services: "linear-gradient(135deg, #a78bfa, #8b5cf6)",
+            };
             return (
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1.5 ${
+                className={`h-9 px-4 rounded-xl text-sm font-semibold flex items-center gap-2 transition-all ${
                   activeTab === tab.key
-                    ? "bg-card text-card-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "text-white shadow-md"
+                    : "bg-white text-muted-foreground border border-border hover:bg-secondary"
                 }`}
+                style={activeTab === tab.key ? { background: gradients[tab.key] || gradients.records } : {}}
               >
                 <Icon className="h-3.5 w-3.5" />
                 {tab.label}
@@ -138,11 +144,12 @@ export default function Compliance() {
                   <button
                     key={s.id}
                     onClick={() => setStaffFilter(staffFilter === s.id ? "all" : s.id)}
-                    className={`rounded-xl p-3 border text-left transition-all ${
+                    className={`rounded-2xl p-3 border text-left transition-all ${
                       staffFilter === s.id
-                        ? "bg-primary/10 border-primary shadow-sm"
-                        : "bg-card border-border/50 hover:shadow-card"
+                        ? "border-purple-300 shadow-md"
+                        : "bg-white border-border/50 hover:shadow-sm"
                     }`}
+                    style={staffFilter === s.id ? { background: "linear-gradient(135deg, #f5f3ff, #ede9fe)" } : { background: "white" }}
                   >
                     <p className="text-xs font-semibold text-card-foreground truncate">{s.first_name} {s.last_name}</p>
                     <div className="flex items-center gap-1.5 mt-1.5">
@@ -168,18 +175,20 @@ export default function Compliance() {
 
             {/* Alerts */}
             {alerts.length > 0 && (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="rounded-xl bg-warning/5 border border-warning/20 p-4">
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="rounded-2xl border border-amber-200 bg-amber-50 p-4 overflow-hidden">
                 <div className="flex items-center gap-2 mb-2">
-                  <AlertTriangle className="h-4 w-4 text-warning" />
-                  <h3 className="text-sm font-semibold text-warning">{alerts.length} Compliance Alert{alerts.length > 1 ? "s" : ""}</h3>
+                  <div className="h-7 w-7 rounded-xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, #fbbf24, #f59e0b)" }}>
+                    <AlertTriangle className="h-3.5 w-3.5 text-white" />
+                  </div>
+                  <h3 className="text-sm font-bold text-amber-800">{alerts.length} Compliance Alert{alerts.length > 1 ? "s" : ""}</h3>
                 </div>
                 <ul className="space-y-1">
                   {alerts.slice(0, 5).map((a: any) => (
-                    <li key={a.id} className="text-xs text-warning/80">
+                    <li key={a.id} className="text-xs text-amber-700">
                       • {a.staff ? `${a.staff.first_name} ${a.staff.last_name}` : "Unknown"}: {a.record_name} — {a.status === "expired" ? "Expired" : "Expiring soon"}
                     </li>
                   ))}
-                  {alerts.length > 5 && <li className="text-xs text-warning/60">...and {alerts.length - 5} more</li>}
+                  {alerts.length > 5 && <li className="text-xs text-amber-600">...and {alerts.length - 5} more</li>}
                 </ul>
               </motion.div>
             )}

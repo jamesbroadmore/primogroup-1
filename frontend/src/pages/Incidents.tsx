@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { AppLayout } from "@/components/AppLayout";
-import { Plus, AlertTriangle, AlertCircle, Shield, Pill, Loader2, X, Lock } from "lucide-react";
+import { Plus, AlertTriangle, AlertCircle, Shield, Pill, Loader2, Lock, X } from "lucide-react";
 import { motion } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { fullName } from "@/lib/display-names";
+import { Avatar, EmptyState, DialogOverlay, DialogHeader, FormField, FormSelect, FormInput, FormTextarea } from "@/components/ui-kit";
 
 const typeIcons: Record<string, any> = {
   medication_error: Pill,
@@ -27,8 +28,14 @@ const INCIDENT_TYPES = [
   { value: "other", label: "Other" },
 ];
 
+const SEVERITY_CONFIG: Record<string, { bg: string; text: string; border: string; dot: string }> = {
+  critical: { bg: "bg-red-50", text: "text-red-700", border: "border-red-200", dot: "bg-red-500" },
+  high: { bg: "bg-orange-50", text: "text-orange-700", border: "border-orange-200", dot: "bg-orange-500" },
+  medium: { bg: "bg-amber-50", text: "text-amber-700", border: "border-amber-200", dot: "bg-amber-500" },
+  low: { bg: "bg-slate-50", text: "text-slate-600", border: "border-slate-200", dot: "bg-slate-400" },
+};
+
 export default function Incidents() {
-  const { isAdmin } = useAuth();
   const [showAdd, setShowAdd] = useState(false);
 
   const { data: incidents = [], isLoading } = useQuery({
@@ -44,19 +51,39 @@ export default function Incidents() {
     },
   });
 
+  const openCount = incidents.filter((i: any) => i.status === "open" || i.status === "investigating").length;
+
   return (
     <AppLayout title="Incident Reports">
-      <div className="space-y-4">
+      <div className="space-y-5">
+        {/* Top stats */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          {[
+            { label: "Total", value: incidents.length, gradient: "linear-gradient(135deg, #a78bfa, #8b5cf6)" },
+            { label: "Open", value: openCount, gradient: openCount > 0 ? "linear-gradient(135deg, #f87171, #ef4444)" : "linear-gradient(135deg, #4ade80, #22c55e)" },
+            { label: "Critical", value: incidents.filter((i: any) => i.severity === "critical").length, gradient: "linear-gradient(135deg, #fb923c, #f97316)" },
+            { label: "Resolved", value: incidents.filter((i: any) => i.status === "resolved" || i.status === "closed").length, gradient: "linear-gradient(135deg, #4ade80, #22c55e)" },
+          ].map((s, i) => (
+            <motion.div key={i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
+              className="rounded-2xl bg-white border border-border/50 shadow-sm p-4">
+              <div className="h-8 w-8 rounded-xl mb-2" style={{ background: s.gradient }} />
+              <p className="text-2xl font-bold text-foreground">{s.value}</p>
+              <p className="text-xs text-muted-foreground">{s.label}</p>
+            </motion.div>
+          ))}
+        </div>
+
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <p className="text-sm text-muted-foreground">{incidents.length} incidents</p>
-            <span className="text-[10px] text-muted-foreground bg-muted px-2 py-0.5 rounded-full flex items-center gap-1">
-              <Lock className="h-2.5 w-2.5" /> Immutable after submission
+            <span className="text-xs text-muted-foreground bg-white border border-border px-2.5 py-1 rounded-xl flex items-center gap-1.5 shadow-sm">
+              <Lock className="h-3 w-3" /> Immutable after submission
             </span>
           </div>
           <button
             onClick={() => setShowAdd(true)}
-            className="h-9 px-4 rounded-lg bg-destructive text-destructive-foreground text-sm font-medium flex items-center gap-2 hover:opacity-90 transition-opacity"
+            className="h-9 px-4 rounded-xl text-white text-sm font-bold flex items-center gap-2 shadow-md hover:opacity-90 transition-all"
+            style={{ background: "linear-gradient(135deg, #f87171, #ef4444)" }}
           >
             <Plus className="h-4 w-4" /> Report Incident
           </button>
@@ -67,56 +94,69 @@ export default function Incidents() {
         {isLoading ? (
           <div className="flex justify-center py-16"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
         ) : incidents.length === 0 ? (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="rounded-xl bg-card p-12 shadow-card border border-border/50 text-center">
-            <p className="text-muted-foreground text-sm">No incidents reported. Use "Report Incident" to log one.</p>
-          </motion.div>
+          <div className="rounded-2xl bg-white border border-border/50 shadow-sm">
+            <EmptyState
+              icon={AlertTriangle}
+              title="No incidents reported"
+              description='Use "Report Incident" to log a new incident.'
+            />
+          </div>
         ) : (
           <div className="space-y-3">
             {incidents.map((inc: any, i: number) => {
               const Icon = typeIcons[inc.incident_type] || AlertTriangle;
+              const sev = SEVERITY_CONFIG[inc.severity] || SEVERITY_CONFIG.low;
               return (
-                <motion.div key={inc.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
-                  className="rounded-xl bg-card p-5 shadow-card border border-border/50">
-                  <div className="flex items-start gap-3">
-                    <div className={`h-9 w-9 rounded-lg flex items-center justify-center shrink-0 ${
-                      inc.severity === "critical" || inc.severity === "high" ? "bg-destructive/10" : inc.severity === "medium" ? "bg-warning/10" : "bg-muted"
-                    }`}>
-                      <Icon className={`h-4 w-4 ${
-                        inc.severity === "critical" || inc.severity === "high" ? "text-destructive" : inc.severity === "medium" ? "text-warning" : "text-muted-foreground"
-                      }`} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start justify-between gap-2 flex-wrap">
-                        <div>
-                          <p className="text-sm font-semibold text-card-foreground capitalize">{inc.incident_type.replace(/_/g, " ")}</p>
-                          <p className="text-xs text-muted-foreground">
-                            {fullName(inc.client)} · Reported by {fullName(inc.reporter)} · {format(new Date(inc.incident_date), "MMM d, yyyy")}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {inc.injury_occurred && (
-                            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-destructive/10 text-destructive">Injury</span>
-                          )}
-                          {inc.medical_attention_required && (
-                            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-destructive/10 text-destructive">Medical</span>
-                          )}
-                          <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                            inc.severity === "critical" || inc.severity === "high" ? "bg-destructive/10 text-destructive" :
-                            inc.severity === "medium" ? "bg-warning/10 text-warning" : "bg-muted text-muted-foreground"
-                          }`}>{inc.severity}</span>
-                          <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                            inc.status === "resolved" || inc.status === "closed" ? "bg-success/10 text-success" :
-                            inc.status === "open" ? "bg-destructive/10 text-destructive" : "bg-warning/10 text-warning"
-                          }`}>{inc.status}</span>
-                        </div>
+                <motion.div
+                  key={inc.id}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.04 }}
+                  className="rounded-2xl bg-white border border-border/50 shadow-sm hover:shadow-md transition-shadow overflow-hidden"
+                >
+                  <div className={`h-1 ${sev.dot}`} style={{ background: sev.dot.replace("bg-", "") }} />
+                  <div className="p-5">
+                    <div className="flex items-start gap-4">
+                      <div className={`h-10 w-10 rounded-2xl flex items-center justify-center shrink-0 ${sev.bg} border ${sev.border}`}>
+                        <Icon className={`h-5 w-5 ${sev.text}`} />
                       </div>
-                      <p className="text-sm text-muted-foreground mt-2">{inc.description}</p>
-                      {inc.immediate_action && (
-                        <p className="text-xs text-muted-foreground mt-1"><strong className="text-card-foreground">Action taken:</strong> {inc.immediate_action}</p>
-                      )}
-                      {inc.location && (
-                        <p className="text-xs text-muted-foreground mt-1"><strong className="text-card-foreground">Location:</strong> {inc.location}</p>
-                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2 flex-wrap mb-2">
+                          <div>
+                            <p className="text-sm font-bold text-foreground capitalize">{inc.incident_type.replace(/_/g, " ")}</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                              {fullName(inc.client)} · Reported by {fullName(inc.reporter)} · {format(new Date(inc.incident_date), "MMM d, yyyy")}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            {inc.injury_occurred && (
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-50 text-red-600 border border-red-200">Injury</span>
+                            )}
+                            {inc.medical_attention_required && (
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-50 text-red-600 border border-red-200">Medical</span>
+                            )}
+                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border capitalize ${sev.bg} ${sev.text} ${sev.border}`}>
+                              {inc.severity}
+                            </span>
+                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full capitalize ${
+                              inc.status === "resolved" || inc.status === "closed" ? "bg-emerald-50 text-emerald-700 border border-emerald-200" :
+                              inc.status === "open" ? "bg-red-50 text-red-700 border border-red-200" :
+                              "bg-amber-50 text-amber-700 border border-amber-200"
+                            }`}>{inc.status}</span>
+                          </div>
+                        </div>
+                        <p className="text-sm text-slate-600 leading-relaxed">{inc.description}</p>
+                        {inc.immediate_action && (
+                          <p className="text-xs text-muted-foreground mt-2">
+                            <strong className="text-foreground">Action taken: </strong>{inc.immediate_action}
+                          </p>
+                        )}
+                        {inc.location && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            <strong className="text-foreground">Location: </strong>{inc.location}
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </motion.div>
@@ -153,15 +193,10 @@ function AddIncidentDialog({ onClose }: { onClose: () => void }) {
   });
 
   const [form, setForm] = useState({
-    incident_type: "injury",
-    severity: "low",
-    client_id: "",
-    description: "",
-    location: "",
-    immediate_action: "",
+    incident_type: "injury", severity: "low", client_id: "",
+    description: "", location: "", immediate_action: "",
     incident_date: new Date().toISOString().split("T")[0],
-    injury_occurred: false,
-    medical_attention_required: false,
+    injury_occurred: false, medical_attention_required: false,
   });
 
   const mutation = useMutation({
@@ -169,22 +204,16 @@ function AddIncidentDialog({ onClose }: { onClose: () => void }) {
       if (!form.description.trim()) throw new Error("Description is required");
       if (!staffProfile) throw new Error("Your account is not linked to a staff record");
       const { error } = await supabase.from("incidents").insert({
-        incident_type: form.incident_type,
-        severity: form.severity,
-        client_id: form.client_id || null,
-        description: form.description.trim(),
-        location: form.location.trim() || null,
-        immediate_action: form.immediate_action.trim() || null,
-        incident_date: form.incident_date,
-        reported_by: staffProfile,
-        created_by: user?.id,
-        injury_occurred: form.injury_occurred,
-        medical_attention_required: form.medical_attention_required,
+        incident_type: form.incident_type, severity: form.severity,
+        client_id: form.client_id || null, description: form.description.trim(),
+        location: form.location.trim() || null, immediate_action: form.immediate_action.trim() || null,
+        incident_date: form.incident_date, reported_by: staffProfile, created_by: user?.id,
+        injury_occurred: form.injury_occurred, medical_attention_required: form.medical_attention_required,
       });
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Incident reported — this record is now immutable");
+      toast.success("Incident reported — immutable record created");
       queryClient.invalidateQueries({ queryKey: ["incidents"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard-incidents"] });
       queryClient.invalidateQueries({ queryKey: ["notif-incidents"] });
@@ -194,85 +223,67 @@ function AddIncidentDialog({ onClose }: { onClose: () => void }) {
   });
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
-      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
-        className="w-full max-w-md max-h-[90vh] overflow-y-auto rounded-xl bg-card shadow-xl border border-border"
-        onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between p-5 border-b">
-          <h2 className="text-lg font-semibold text-card-foreground">Report Incident</h2>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="h-5 w-5" /></button>
+    <DialogOverlay onClose={onClose}>
+      <DialogHeader title="Report Incident" onClose={onClose} gradient="linear-gradient(90deg, #f87171, #ef4444)" />
+      <form onSubmit={(e) => { e.preventDefault(); mutation.mutate(); }} className="p-6 space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          <FormField label="Type">
+            <FormSelect value={form.incident_type} onChange={(v) => setForm({ ...form, incident_type: v })}>
+              {INCIDENT_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
+            </FormSelect>
+          </FormField>
+          <FormField label="Severity">
+            <FormSelect value={form.severity} onChange={(v) => setForm({ ...form, severity: v })}>
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+              <option value="critical">Critical</option>
+            </FormSelect>
+          </FormField>
         </div>
-        <form onSubmit={(e) => { e.preventDefault(); mutation.mutate(); }} className="p-5 space-y-4">
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Type</label>
-              <select value={form.incident_type} onChange={(e) => setForm({ ...form, incident_type: e.target.value })}
-                className="w-full h-9 rounded-lg border bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
-                {INCIDENT_TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Severity</label>
-              <select value={form.severity} onChange={(e) => setForm({ ...form, severity: e.target.value })}
-                className="w-full h-9 rounded-lg border bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-                <option value="critical">Critical</option>
-              </select>
-            </div>
-          </div>
-          <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Client</label>
-            <select value={form.client_id} onChange={(e) => setForm({ ...form, client_id: e.target.value })}
-              className="w-full h-9 rounded-lg border bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
-              <option value="">Select client (optional)...</option>
-              {clientList.map((c: any) => (
-                <option key={c.id} value={c.id}>{c.preferred_name ? `${c.preferred_name} ${c.last_name}` : `${c.first_name} ${c.last_name}`}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Date</label>
-            <input type="date" value={form.incident_date} onChange={(e) => setForm({ ...form, incident_date: e.target.value })}
-              className="w-full h-9 rounded-lg border bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
-          </div>
-          <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Location</label>
-            <input type="text" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} placeholder="Where did it happen?"
-              className="w-full h-9 rounded-lg border bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
-          </div>
-          <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Description *</label>
-            <textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Describe what happened..." rows={3}
-              className="w-full rounded-lg border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none" />
-          </div>
-          <div>
-            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Immediate Action Taken</label>
-            <textarea value={form.immediate_action} onChange={(e) => setForm({ ...form, immediate_action: e.target.value })} placeholder="What was done immediately?" rows={2}
-              className="w-full rounded-lg border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none" />
-          </div>
-          <div className="flex gap-4">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" checked={form.injury_occurred} onChange={(e) => setForm({ ...form, injury_occurred: e.target.checked })} className="rounded border-border" />
-              <span className="text-xs text-muted-foreground">Injury occurred</span>
-            </label>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" checked={form.medical_attention_required} onChange={(e) => setForm({ ...form, medical_attention_required: e.target.checked })} className="rounded border-border" />
-              <span className="text-xs text-muted-foreground">Medical attention required</span>
-            </label>
-          </div>
-          <div className="rounded-lg bg-warning/5 border border-warning/20 p-3">
-            <p className="text-[10px] text-warning flex items-center gap-1"><Lock className="h-3 w-3" /> Once submitted, this incident report cannot be modified.</p>
-          </div>
-          <div className="flex justify-end gap-2 pt-2">
-            <button type="button" onClick={onClose} className="h-9 px-4 rounded-lg border text-sm font-medium text-foreground hover:bg-secondary transition-colors">Cancel</button>
-            <button type="submit" disabled={mutation.isPending} className="h-9 px-4 rounded-lg bg-destructive text-destructive-foreground text-sm font-medium flex items-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50">
-              {mutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />} Report Incident
-            </button>
-          </div>
-        </form>
-      </motion.div>
-    </div>
+        <FormField label="Client">
+          <FormSelect value={form.client_id} onChange={(v) => setForm({ ...form, client_id: v })}>
+            <option value="">Select client (optional)...</option>
+            {clientList.map((c: any) => (
+              <option key={c.id} value={c.id}>{c.preferred_name ? `${c.preferred_name} ${c.last_name}` : `${c.first_name} ${c.last_name}`}</option>
+            ))}
+          </FormSelect>
+        </FormField>
+        <FormField label="Date">
+          <FormInput type="date" value={form.incident_date} onChange={(v) => setForm({ ...form, incident_date: v })} />
+        </FormField>
+        <FormField label="Location">
+          <FormInput value={form.location} onChange={(v) => setForm({ ...form, location: v })} placeholder="Where did it happen?" />
+        </FormField>
+        <FormField label="Description" required>
+          <FormTextarea value={form.description} onChange={(v) => setForm({ ...form, description: v })} placeholder="Describe what happened..." rows={3} />
+        </FormField>
+        <FormField label="Immediate Action Taken">
+          <FormTextarea value={form.immediate_action} onChange={(v) => setForm({ ...form, immediate_action: v })} placeholder="What was done immediately?" rows={2} />
+        </FormField>
+        <div className="flex gap-6">
+          <label className="flex items-center gap-2.5 cursor-pointer">
+            <input type="checkbox" checked={form.injury_occurred} onChange={(e) => setForm({ ...form, injury_occurred: e.target.checked })} className="rounded" />
+            <span className="text-sm text-muted-foreground">Injury occurred</span>
+          </label>
+          <label className="flex items-center gap-2.5 cursor-pointer">
+            <input type="checkbox" checked={form.medical_attention_required} onChange={(e) => setForm({ ...form, medical_attention_required: e.target.checked })} className="rounded" />
+            <span className="text-sm text-muted-foreground">Medical attention required</span>
+          </label>
+        </div>
+        <div className="rounded-xl bg-amber-50 border border-amber-200 p-3 flex items-center gap-2">
+          <Lock className="h-4 w-4 text-amber-500 shrink-0" />
+          <p className="text-xs text-amber-700">Once submitted, this incident report cannot be modified.</p>
+        </div>
+        <div className="flex justify-end gap-2 pt-2">
+          <button type="button" onClick={onClose} className="h-10 px-4 rounded-xl border text-sm font-medium text-foreground hover:bg-secondary transition-colors">Cancel</button>
+          <button type="submit" disabled={mutation.isPending}
+            className="h-10 px-5 rounded-xl text-white text-sm font-bold flex items-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50 shadow-md"
+            style={{ background: "linear-gradient(135deg, #f87171, #ef4444)" }}>
+            {mutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />} Report Incident
+          </button>
+        </div>
+      </form>
+    </DialogOverlay>
   );
 }

@@ -93,15 +93,22 @@ export default function Onboarding() {
         <div className="flex items-center gap-2">
           {STEPS.map((s, i) => {
             const active = i === currentStep;
+            const STEP_GRADIENTS = [
+              "linear-gradient(135deg, #f472b6, #ec4899)",
+              "linear-gradient(135deg, #60a5fa, #3b82f6)",
+              "linear-gradient(135deg, #2dd4bf, #14b8a6)",
+              "linear-gradient(135deg, #4ade80, #22c55e)",
+            ];
             return (
               <button
                 key={s.key}
                 onClick={() => setCurrentStep(i)}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all border ${
+                className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
                   active
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "bg-card text-muted-foreground border-border hover:bg-secondary/50"
+                    ? "text-white shadow-md"
+                    : "bg-white text-muted-foreground border border-border hover:bg-secondary"
                 }`}
+                style={active ? { background: STEP_GRADIENTS[i] } : {}}
               >
                 <s.icon className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">{s.label}</span>

@@ -113,7 +113,8 @@ export function AIChatbot() {
             animate={{ scale: 1 }}
             exit={{ scale: 0 }}
             onClick={() => setOpen(true)}
-            className="fixed bottom-5 right-5 z-50 h-14 w-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center hover:opacity-90 transition-opacity"
+            className="fixed bottom-6 right-6 z-50 h-14 w-14 rounded-2xl text-white shadow-xl flex items-center justify-center hover:opacity-90 hover:scale-105 transition-all"
+            style={{ background: "linear-gradient(135deg, #a78bfa, #8b5cf6)" }}
           >
             <MessageSquare className="h-6 w-6" />
           </motion.button>
@@ -127,22 +128,34 @@ export function AIChatbot() {
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="fixed bottom-5 right-5 z-50 w-[380px] max-w-[calc(100vw-2.5rem)] h-[540px] max-h-[calc(100vh-2.5rem)] rounded-2xl bg-card shadow-2xl border border-border flex flex-col overflow-hidden"
+            className="fixed bottom-6 right-6 z-50 w-[380px] max-w-[calc(100vw-2.5rem)] h-[540px] max-h-[calc(100vh-2.5rem)] rounded-3xl bg-white shadow-2xl border border-slate-100 flex flex-col overflow-hidden"
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b bg-primary/5">
-              <div className="flex items-center gap-2">
-                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Bot className="h-4 w-4 text-primary" />
+            <div className="relative">
+              <div className="h-1.5 w-full" style={{ background: "linear-gradient(90deg, #a78bfa, #8b5cf6, #60a5fa)" }} />
+              <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
+                <div className="flex items-center gap-2.5">
+                  <div
+                    className="h-9 w-9 rounded-2xl flex items-center justify-center shadow-sm"
+                    style={{ background: "linear-gradient(135deg, #a78bfa, #8b5cf6)" }}
+                  >
+                    <Bot className="h-4 w-4 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-slate-800">Ask Maureen</p>
+                    <div className="flex items-center gap-1">
+                      <div className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                      <p className="text-[10px] text-slate-400">Policies & procedures</p>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm font-semibold text-card-foreground">Ask Maureen</p>
-                  <p className="text-[10px] text-muted-foreground">Policies, procedures & support</p>
-                </div>
+                <button
+                  onClick={() => setOpen(false)}
+                  className="h-8 w-8 rounded-xl flex items-center justify-center text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
+                >
+                  <X className="h-4 w-4" />
+                </button>
               </div>
-              <button onClick={() => setOpen(false)} className="text-muted-foreground hover:text-foreground">
-                <X className="h-5 w-5" />
-              </button>
             </div>
 
             {/* Messages */}
@@ -150,10 +163,13 @@ export function AIChatbot() {
               {messages.length === 0 && (
                 <div className="space-y-3">
                   <div className="flex items-start gap-2">
-                    <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                      <Bot className="h-3.5 w-3.5 text-primary" />
+                    <div
+                      className="h-7 w-7 rounded-xl flex items-center justify-center shrink-0 mt-0.5 shadow-sm"
+                      style={{ background: "linear-gradient(135deg, #a78bfa, #8b5cf6)" }}
+                    >
+                      <Bot className="h-3.5 w-3.5 text-white" />
                     </div>
-                    <div className="rounded-xl rounded-tl-none bg-secondary/50 px-3 py-2 text-sm text-card-foreground">
+                    <div className="rounded-2xl rounded-tl-none bg-slate-100 px-3.5 py-2.5 text-sm text-slate-700 max-w-[80%]">
                       G'day! I'm Maureen, your Carters Care assistant. Ask me about policies, procedures, incident reporting, compliance, or anything else work-related. 👋
                     </div>
                   </div>
@@ -162,7 +178,7 @@ export function AIChatbot() {
                       <button
                         key={s}
                         onClick={() => sendMessage(s)}
-                        className="text-xs px-3 py-1.5 rounded-full border border-primary/20 text-primary hover:bg-primary/5 transition-colors"
+                        className="text-xs px-3 py-1.5 rounded-full bg-purple-50 border border-purple-200 text-purple-600 hover:bg-purple-100 transition-colors font-medium"
                       >
                         {s}
                       </button>
@@ -173,18 +189,25 @@ export function AIChatbot() {
 
               {messages.map((m, i) => (
                 <div key={i} className={`flex items-start gap-2 ${m.role === "user" ? "flex-row-reverse" : ""}`}>
-                  <div className={`h-7 w-7 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
-                    m.role === "user" ? "bg-primary text-primary-foreground" : "bg-primary/10"
-                  }`}>
-                    {m.role === "user" ? <User className="h-3.5 w-3.5" /> : <Bot className="h-3.5 w-3.5 text-primary" />}
+                  <div
+                    className={`h-7 w-7 rounded-xl flex items-center justify-center shrink-0 mt-0.5`}
+                    style={{
+                      background: m.role === "user"
+                        ? "linear-gradient(135deg, #a78bfa, #8b5cf6)"
+                        : "linear-gradient(135deg, #e2e8f0, #cbd5e1)"
+                    }}
+                  >
+                    {m.role === "user" ? <User className="h-3.5 w-3.5 text-white" /> : <Bot className="h-3.5 w-3.5 text-slate-500" />}
                   </div>
-                  <div className={`rounded-xl px-3 py-2 text-sm max-w-[80%] ${
+                  <div className={`rounded-2xl px-3.5 py-2.5 text-sm max-w-[80%] ${
                     m.role === "user"
-                      ? "rounded-tr-none bg-primary text-primary-foreground"
-                      : "rounded-tl-none bg-secondary/50 text-card-foreground"
-                  }`}>
+                      ? "rounded-tr-none text-white"
+                      : "rounded-tl-none bg-slate-100 text-slate-700"
+                  }`}
+                  style={m.role === "user" ? { background: "linear-gradient(135deg, #a78bfa, #8b5cf6)" } : {}}
+                  >
                     {m.role === "assistant" ? (
-                      <div className="prose prose-sm dark:prose-invert max-w-none [&_p]:my-1 [&_ul]:my-1 [&_ol]:my-1 [&_li]:my-0.5 [&_h1]:text-base [&_h2]:text-sm [&_h3]:text-sm">
+                      <div className="prose prose-sm max-w-none [&_p]:my-1 [&_ul]:my-1 [&_ol]:my-1 [&_li]:my-0.5 [&_h1]:text-base [&_h2]:text-sm [&_h3]:text-sm">
                         <ReactMarkdown>{m.content}</ReactMarkdown>
                       </div>
                     ) : (
@@ -196,11 +219,15 @@ export function AIChatbot() {
 
               {isLoading && messages[messages.length - 1]?.role === "user" && (
                 <div className="flex items-start gap-2">
-                  <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                    <Bot className="h-3.5 w-3.5 text-primary" />
+                  <div className="h-7 w-7 rounded-xl flex items-center justify-center shrink-0" style={{ background: "linear-gradient(135deg, #e2e8f0, #cbd5e1)" }}>
+                    <Bot className="h-3.5 w-3.5 text-slate-500" />
                   </div>
-                  <div className="rounded-xl rounded-tl-none bg-secondary/50 px-3 py-2">
-                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                  <div className="rounded-2xl rounded-tl-none bg-slate-100 px-3.5 py-2.5">
+                    <div className="flex gap-1">
+                      <div className="h-2 w-2 rounded-full bg-slate-400 animate-bounce" />
+                      <div className="h-2 w-2 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: "0.15s" }} />
+                      <div className="h-2 w-2 rounded-full bg-slate-400 animate-bounce" style={{ animationDelay: "0.3s" }} />
+                    </div>
                   </div>
                 </div>
               )}
@@ -209,20 +236,21 @@ export function AIChatbot() {
             {/* Input */}
             <form
               onSubmit={(e) => { e.preventDefault(); sendMessage(input); }}
-              className="p-3 border-t flex items-center gap-2"
+              className="p-3 border-t border-slate-100 flex items-center gap-2"
             >
               <input
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                placeholder="Ask a question..."
+                placeholder="Ask Maureen anything..."
                 disabled={isLoading}
                 maxLength={1000}
-                className="flex-1 h-9 rounded-lg border bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
+                className="flex-1 h-10 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-300 transition-all disabled:opacity-50"
               />
               <button
                 type="submit"
                 disabled={isLoading || !input.trim()}
-                className="h-9 w-9 rounded-lg bg-primary text-primary-foreground flex items-center justify-center hover:opacity-90 transition-opacity disabled:opacity-50"
+                className="h-10 w-10 rounded-xl text-white flex items-center justify-center hover:opacity-90 transition-opacity disabled:opacity-50 shadow-sm"
+                style={{ background: "linear-gradient(135deg, #a78bfa, #8b5cf6)" }}
               >
                 <Send className="h-4 w-4" />
               </button>

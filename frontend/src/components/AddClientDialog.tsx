@@ -118,7 +118,7 @@ export function AddClientDialog({ open, onClose }: AddClientDialogProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
-      <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-xl bg-card shadow-xl border border-border" onClick={(e) => e.stopPropagation()}>
+      <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-3xl bg-white shadow-2xl border border-white/80" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between p-5 border-b">
           <h2 className="text-lg font-semibold text-card-foreground">Add Client</h2>
           <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="h-5 w-5" /></button>
@@ -186,7 +186,7 @@ export function AddClientDialog({ open, onClose }: AddClientDialogProps) {
               onChange={(e) => update("support_needs", e.target.value)}
               placeholder={isAgedCare ? "Describe care requirements..." : "Describe support requirements..."}
               rows={2}
-              className="w-full rounded-lg border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-300 resize-none"
             />
           </div>
 
@@ -205,15 +205,15 @@ export function AddClientDialog({ open, onClose }: AddClientDialogProps) {
               onChange={(e) => update("notes", e.target.value)}
               placeholder="Any additional notes..."
               rows={2}
-              className="w-full rounded-lg border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-300 resize-none"
             />
           </div>
 
           <div className="flex justify-end gap-2 pt-2">
-            <button type="button" onClick={onClose} className="h-9 px-4 rounded-lg border text-sm font-medium text-foreground hover:bg-secondary transition-colors">
+            <button type="button" onClick={onClose} className="h-9 px-4 rounded-xl border text-sm font-medium text-foreground hover:bg-secondary transition-colors">
               Cancel
             </button>
-            <button type="submit" disabled={mutation.isPending} className="h-9 px-4 rounded-lg bg-primary text-primary-foreground text-sm font-medium flex items-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50">
+            <button type="submit" disabled={mutation.isPending} className="h-9 px-4 rounded-xl text-white text-sm font-semibold flex items-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50 shadow-md">
               {mutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
               Add Client
             </button>
@@ -235,7 +235,7 @@ function Field({ label, value, onChange, error, placeholder, type = "text" }: {
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className={`w-full h-9 rounded-lg border bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring ${error ? "border-destructive" : ""}`}
+        className={`w-full h-9 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-300 ${error ? "border-destructive" : ""}`}
       />
       {error && <p className="text-xs text-destructive mt-1">{error}</p>}
     </div>
@@ -251,7 +251,7 @@ function SelectField({ label, value, onChange, options }: {
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full h-9 rounded-lg border bg-background px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+        className="w-full h-9 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-300"
       >
         {options.map((o) => (
           <option key={o.value} value={o.value}>{o.label}</option>

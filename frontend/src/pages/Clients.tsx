@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { AppLayout } from "@/components/AppLayout";
-import { Plus, Search, MoreHorizontal, Loader2, Pencil, Trash2 } from "lucide-react";
+import { Plus, MoreHorizontal, Loader2, Pencil, Trash2, UserCircle, Users } from "lucide-react";
 import { motion } from "framer-motion";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,13 +9,24 @@ import { EditClientDialog } from "@/components/EditClientDialog";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { fullName } from "@/lib/display-names";
+import { Avatar, SearchInput, PrimaryButton, StatusBadge, EmptyState } from "@/components/ui-kit";
 
 const TABS = [
-  { key: "all", label: "All Clients" },
-  { key: "ndis", label: "NDIS" },
-  { key: "aged_care", label: "Aged Care" },
-  { key: "other", label: "Other" },
+  { key: "all", label: "All Clients", gradient: "linear-gradient(135deg, #a78bfa, #8b5cf6)" },
+  { key: "ndis", label: "NDIS", gradient: "linear-gradient(135deg, #60a5fa, #3b82f6)" },
+  { key: "aged_care", label: "Aged Care", gradient: "linear-gradient(135deg, #2dd4bf, #14b8a6)" },
+  { key: "other", label: "Other", gradient: "linear-gradient(135deg, #94a3b8, #64748b)" },
 ];
+
+const FUNDING_LABELS: Record<string, string> = {
+  ndis: "NDIS",
+  home_care: "Home Care",
+  aged_care: "Aged Care",
+  chsp: "CHSP",
+  hvp: "HVP",
+  private: "Private",
+  other: "Other",
+};
 
 function getFundingCategory(fundingType: string | null): string {
   if (!fundingType) return "other";
@@ -23,6 +34,12 @@ function getFundingCategory(fundingType: string | null): string {
   if (["home_care", "aged_care", "chsp", "hvp"].includes(fundingType)) return "aged_care";
   return "other";
 }
+
+const CATEGORY_COLORS: Record<string, { bg: string; text: string; border: string }> = {
+  ndis: { bg: "bg-purple-50", text: "text-purple-700", border: "border-purple-200" },
+  aged_care: { bg: "bg-teal-50", text: "text-teal-700", border: "border-teal-200" },
+  other: { bg: "bg-slate-100", text: "text-slate-600", border: "border-slate-200" },
+};
 
 export default function Clients() {
   const { isAdmin } = useAuth();
@@ -68,7 +85,7 @@ export default function Clients() {
       if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Client deleted");
+      toast.success("Client removed");
       queryClient.invalidateQueries({ queryKey: ["clients"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard-client-count"] });
     },
@@ -76,7 +93,7 @@ export default function Clients() {
   });
 
   const handleDelete = (client: any) => {
-    if (confirm(`Are you sure you want to delete ${fullName(client)}?`)) {
+    if (confirm(`Remove ${fullName(client)}?`)) {
       deleteMutation.mutate(client.id);
     }
     setMenuOpen(null);
@@ -104,30 +121,36 @@ export default function Clients() {
   }, [clientsData]);
 
   return (
-    <AppLayout title="Client Management">
-      <div className="space-y-4">
-        <div className="flex flex-wrap gap-1 rounded-lg bg-secondary/50 p-1 w-fit">
+    <AppLayout title="Clients">
+      <div className="space-y-5">
+        {/* Tab pills */}
+        <div className="flex flex-wrap gap-2">
           {TABS.map((tab) => (
-            <button key={tab.key} onClick={() => setActiveTab(tab.key)}
-              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-                activeTab === tab.key ? "bg-card text-card-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
-              }`}>
-              {tab.label}<span className="ml-1.5 text-[10px] opacity-60">{counts[tab.key as keyof typeof counts]}</span>
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`h-9 px-4 rounded-xl text-sm font-semibold flex items-center gap-2 transition-all ${
+                activeTab === tab.key
+                  ? "text-white shadow-md"
+                  : "bg-white text-muted-foreground border border-border hover:bg-secondary"
+              }`}
+              style={activeTab === tab.key ? { background: tab.gradient } : {}}
+            >
+              {tab.label}
+              <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded-full ${
+                activeTab === tab.key ? "bg-white/25 text-white" : "bg-muted text-muted-foreground"
+              }`}>{counts[tab.key as keyof typeof counts]}</span>
             </button>
           ))}
         </div>
 
+        {/* Toolbar */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <div className="relative w-full sm:w-72">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <input value={search} onChange={(e) => setSearch(e.target.value)}
-              className="w-full h-9 pl-9 pr-3 rounded-lg border bg-card text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-              placeholder="Search clients..." />
-          </div>
+          <SearchInput value={search} onChange={setSearch} placeholder="Search clients..." className="w-full sm:w-72" />
           {isAdmin && (
-            <button onClick={() => setShowAdd(true)} className="h-9 px-4 rounded-lg bg-primary text-primary-foreground text-sm font-medium flex items-center gap-2 hover:opacity-90 transition-opacity">
+            <PrimaryButton onClick={() => setShowAdd(true)} variant="teal" className="">
               <Plus className="h-4 w-4" /> Add Client
-            </button>
+            </PrimaryButton>
           )}
         </div>
 
@@ -137,59 +160,88 @@ export default function Clients() {
         {isLoading ? (
           <div className="flex justify-center py-16"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
         ) : filtered.length === 0 ? (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="rounded-xl bg-card p-12 shadow-card border border-border/50 text-center">
-            <p className="text-muted-foreground text-sm">
-              {clientsData.length === 0 ? 'No clients yet. Click "Add Client" to get started.' : "No clients match your filters."}
-            </p>
-          </motion.div>
+          <div className="rounded-2xl bg-white border border-border/50 shadow-sm">
+            <EmptyState
+              icon={UserCircle}
+              title={clientsData.length === 0 ? "No clients yet" : "No results found"}
+              description={clientsData.length === 0 ? 'Click "Add Client" to add your first client.' : "Try adjusting your search or filters."}
+            />
+          </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {filtered.map((c, i) => {
+            {filtered.map((c: any, i: number) => {
               const category = getFundingCategory(c.funding_type);
+              const catColors = CATEGORY_COLORS[category];
+              const assigned = assignmentsByClient[c.id] || [];
               return (
-                <motion.div key={c.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}
-                  className="rounded-xl bg-card p-5 shadow-card border border-border/50">
-                  <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-sm font-semibold text-card-foreground">{fullName(c)}</h3>
-                        <span className={`text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded-full ${
-                          category === "ndis" ? "bg-primary/10 text-primary" :
-                          category === "aged_care" ? "bg-accent/50 text-accent-foreground" :
-                          "bg-muted text-muted-foreground"
-                        }`}>
-                          {category === "ndis" ? "NDIS" : category === "aged_care" ? "Aged Care" : "Other"}
-                        </span>
-                      </div>
-                      {c.preferred_name && c.preferred_name !== c.first_name && (
-                        <p className="text-xs text-muted-foreground mt-0.5">Legal: {c.first_name} {c.last_name}</p>
-                      )}
-                      {c.ndis_number && <p className="text-xs text-muted-foreground mt-0.5">NDIS: {c.ndis_number}</p>}
-                    </div>
-                    {isAdmin && (
-                      <ClientActionMenu open={menuOpen === c.id} onToggle={() => setMenuOpen(menuOpen === c.id ? null : c.id)}
-                        onClose={() => setMenuOpen(null)} onEdit={() => { setEditClient(c); setMenuOpen(null); }}
-                        onDelete={() => handleDelete(c)} />
-                    )}
-                  </div>
-                  <div className="space-y-2 text-xs">
-                    <div className="flex justify-between"><span className="text-muted-foreground">Status</span><span className="text-card-foreground font-medium capitalize">{c.status}</span></div>
-                    {c.funding_type && (
-                      <div className="flex justify-between"><span className="text-muted-foreground">Funding</span><span className="text-card-foreground font-medium capitalize">{c.funding_type.replace("_", " ")}</span></div>
-                    )}
-                    {c.phone && <div className="flex justify-between"><span className="text-muted-foreground">Phone</span><span className="text-card-foreground font-medium">{c.phone}</span></div>}
-                    {assignmentsByClient[c.id] && assignmentsByClient[c.id].length > 0 && (
-                      <div className="pt-1">
-                        <span className="text-muted-foreground">Assigned Staff</span>
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          {assignmentsByClient[c.id].map((s: any) => (
-                            <span key={s.id} className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-medium">
-                              {fullName(s)}
-                            </span>
-                          ))}
+                <motion.div
+                  key={c.id}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.03 }}
+                  className="rounded-2xl bg-white border border-border/50 shadow-sm hover:shadow-md transition-shadow overflow-hidden"
+                >
+                  {/* Top accent line */}
+                  <div className="h-1" style={{ background: TABS.find(t => t.key === category)?.gradient || TABS[0].gradient }} />
+                  <div className="p-5">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <Avatar name={fullName(c)} size="md" />
+                        <div>
+                          <h3 className="text-sm font-bold text-foreground">{fullName(c)}</h3>
+                          {c.preferred_name && c.preferred_name !== c.first_name && (
+                            <p className="text-[11px] text-muted-foreground">Legal: {c.first_name} {c.last_name}</p>
+                          )}
                         </div>
                       </div>
-                    )}
+                      <div className="flex items-center gap-1">
+                        <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border ${catColors.bg} ${catColors.text} ${catColors.border}`}>
+                          {category === "ndis" ? "NDIS" : category === "aged_care" ? "Aged Care" : "Other"}
+                        </span>
+                        {isAdmin && (
+                          <ClientActionMenu open={menuOpen === c.id} onToggle={() => setMenuOpen(menuOpen === c.id ? null : c.id)}
+                            onClose={() => setMenuOpen(null)} onEdit={() => { setEditClient(c); setMenuOpen(null); }}
+                            onDelete={() => handleDelete(c)} />
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5 text-xs border-t border-slate-100 pt-3">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Status</span>
+                        <StatusBadge status={c.status} />
+                      </div>
+                      {c.funding_type && (
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Funding</span>
+                          <span className="font-medium text-foreground">{FUNDING_LABELS[c.funding_type] || c.funding_type}</span>
+                        </div>
+                      )}
+                      {c.ndis_number && (
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">NDIS #</span>
+                          <span className="font-medium text-foreground font-mono text-[11px]">{c.ndis_number}</span>
+                        </div>
+                      )}
+                      {c.phone && (
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Phone</span>
+                          <span className="font-medium text-foreground">{c.phone}</span>
+                        </div>
+                      )}
+                      {assigned.length > 0 && (
+                        <div className="pt-1">
+                          <p className="text-muted-foreground mb-1.5">Assigned Workers</p>
+                          <div className="flex flex-wrap gap-1">
+                            {assigned.map((s: any) => (
+                              <span key={s.id} className="inline-flex items-center px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200 text-[10px] font-semibold">
+                                {fullName(s)}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </motion.div>
               );
@@ -215,17 +267,17 @@ function ClientActionMenu({ open, onToggle, onClose, onEdit, onDelete }: {
   return (
     <div ref={ref} className="relative">
       <button onClick={(e) => { e.stopPropagation(); onToggle(); }}
-        className="h-8 w-8 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors">
-        <MoreHorizontal className="h-4 w-4" />
+        className="h-7 w-7 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors">
+        <MoreHorizontal className="h-3.5 w-3.5" />
       </button>
       {open && (
-        <div className="absolute right-0 top-full mt-1 z-50 w-36 rounded-lg bg-popover border border-border shadow-lg py-1">
+        <div className="absolute right-0 top-full mt-1 z-50 w-36 rounded-2xl bg-white border border-border shadow-xl py-1.5">
           <button onClick={(e) => { e.stopPropagation(); onEdit(); }}
-            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-popover-foreground hover:bg-secondary transition-colors">
-            <Pencil className="h-3.5 w-3.5" /> Edit
+            className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-foreground hover:bg-slate-50 transition-colors">
+            <Pencil className="h-3.5 w-3.5 text-purple-500" /> Edit
           </button>
           <button onClick={(e) => { e.stopPropagation(); onDelete(); }}
-            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors">
+            className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors">
             <Trash2 className="h-3.5 w-3.5" /> Delete
           </button>
         </div>
