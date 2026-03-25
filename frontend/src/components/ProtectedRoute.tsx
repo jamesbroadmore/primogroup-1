@@ -32,8 +32,8 @@ export function ProtectedRoute({ children, adminOnly = false }: ProtectedRoutePr
   }
 
   if (adminOnly && !isAdmin) {
-    // Redirect support workers to roster as their default page
-    return <Navigate to="/roster" replace />;
+    // Redirect support workers to their friendly home page (Option 3)
+    return <Navigate to="/worker" replace />;
   }
 
   return <>{children}</>;

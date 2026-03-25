@@ -22,6 +22,7 @@ import Onboarding from "./pages/Onboarding";
 import MyCompliance from "./pages/MyCompliance";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
+import WorkerHome from "./pages/WorkerHome";
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1 } },
@@ -42,6 +43,8 @@ const App = () => (
             <Route path="/compliance" element={<ProtectedRoute adminOnly><Compliance /></ProtectedRoute>} />
             <Route path="/financials" element={<ProtectedRoute adminOnly><Financials /></ProtectedRoute>} />
             <Route path="/reports" element={<ProtectedRoute adminOnly><Reports /></ProtectedRoute>} />
+            {/* Worker home - Option 3 Friendly App */}
+            <Route path="/worker" element={<ProtectedRoute><WorkerHome /></ProtectedRoute>} />
             {/* All authenticated users */}
             <Route path="/clients" element={<ProtectedRoute><Clients /></ProtectedRoute>} />
             <Route path="/roster" element={<ProtectedRoute><Roster /></ProtectedRoute>} />
