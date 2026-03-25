@@ -11,6 +11,7 @@ export default defineConfig(({ mode }) => ({
     hmr: {
       overlay: false,
     },
+    allowedHosts: ["platform-update-1.preview.emergentagent.com", "platform-update-1.cluster-11.preview.emergentcf.cloud"],
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
   resolve: {

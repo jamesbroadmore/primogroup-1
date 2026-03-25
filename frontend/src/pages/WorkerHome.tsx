@@ -317,7 +317,7 @@ export default function WorkerHome() {
             transition={{ delay: 0.08 }}
           >
             <button
-              onClick={() => navigate("/check-in")}
+              onClick={() => navigate("/worker/check-in")}
               className="w-full rounded-2xl p-4 flex flex-col items-start gap-2 transition-all hover:scale-[1.02] shadow-sm border border-white/80"
               style={{ background: "linear-gradient(135deg, #dcfce7, #bbf7d0)" }}
             >
@@ -337,7 +337,7 @@ export default function WorkerHome() {
             transition={{ delay: 0.1 }}
           >
             <button
-              onClick={() => navigate("/case-notes")}
+              onClick={() => navigate("/worker/notes")}
               className="w-full rounded-2xl p-4 flex flex-col items-start gap-2 transition-all hover:scale-[1.02] shadow-sm border border-white/80"
               style={{ background: "linear-gradient(135deg, #dbeafe, #bfdbfe)" }}
             >
@@ -392,7 +392,7 @@ export default function WorkerHome() {
                 <div className="flex items-center justify-between mb-3">
                   <h2 className="text-sm font-bold text-slate-700">Recent Notes</h2>
                   <button
-                    onClick={() => navigate("/case-notes")}
+                    onClick={() => navigate("/worker/notes")}
                     className="text-xs text-purple-500 font-semibold flex items-center gap-0.5 hover:text-purple-700"
                   >
                     All <ChevronRight className="h-3 w-3" />
@@ -530,14 +530,14 @@ export default function WorkerHome() {
           <BottomNavItem
             icon={MapPinCheck}
             label="Check In"
-            active={activeTab === "checkin" || location.pathname === "/check-in"}
-            onClick={() => handleNav("checkin", "/check-in")}
+            active={activeTab === "checkin" || location.pathname === "/worker/check-in"}
+            onClick={() => handleNav("checkin", "/worker/check-in")}
           />
           <BottomNavItem
             icon={FileText}
             label="Notes"
-            active={activeTab === "notes" || location.pathname === "/case-notes"}
-            onClick={() => handleNav("notes", "/case-notes")}
+            active={activeTab === "notes" || location.pathname === "/worker/notes"}
+            onClick={() => handleNav("notes", "/worker/notes")}
           />
         </div>
       </div>
