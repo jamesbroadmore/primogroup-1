@@ -1,102 +1,82 @@
 # Carter's Care Group Platform - PRD
 
 ## Original Problem Statement
-Redesign the Carter's Care platform based on provided design mockups, implementing:
-- **Option 1**: Professional admin dashboard with light sidebar
-- **Option 3**: Friendly worker app with mobile-optimized sub-pages
-
-Later expanded to: "Debug, fix, enhance and polish the entire platform."
+Redesign the Carter's Care platform based on provided design mockups, with comprehensive portal upgrades.
 
 ## User Personas
 1. **Admin Users**: Manage staff, clients, roster, compliance, financials, reports
 2. **Worker Users**: Clock in/out for shifts, write case notes, view roster and clients on mobile
 
-## Core Requirements
-
-### Admin Dashboard (Option 1)
-- Professional light sidebar design
-- Redesigned header with user info
-- Metric cards with clean styling
-- Consistent UI across all admin pages
-
-### Worker App (Option 3)
-- Friendly mobile-first dashboard
-- Bottom navigation bar
-- Quick action cards for Check-In and Notes
-- Mobile-optimized sub-pages for critical tasks
-
 ## What's Been Implemented
 
-### March 2025 - Complete Platform Redesign
-- **Admin Pages**: Dashboard, Staff, Clients, Roster, CaseNotes, Incidents, ShiftCheckIn, Timesheets, Compliance, Reports, Financials, MyCompliance, Onboarding, SettingsPage, Invoices
-- **Worker Pages**: WorkerHome dashboard, WorkerCheckIn, WorkerNotes
-- **Shared Components**: ui-kit.tsx (PageHeader, PrimaryButton, StatusBadge)
-- **Layout Components**: AppSidebar.tsx, AppLayout.tsx, WorkerLayout.tsx
+### April 2025 - Portal Upgrades (Current Session)
 
-### April 2025 - Debug, Fix, Enhance & Polish
-**Fixes:**
-- Fixed CSS @import order - moved Google Fonts to HTML head
-- Added React Router v7 future flags (v7_startTransition, v7_relativeSplatPath) - eliminated console warnings
-- Fixed vite.config.ts port configuration for deployment
+#### New Navigation Structure
+**Staff Section (Admin):**
+- All Staff - Main staff list
+- HR & Onboarding - Employment docs, police checks, WWCC, qualifications
+- Training - NDIS worker training, aged care modules (dementia, Parkinson's, stroke/heart attack)
+- Compliance - Staff compliance records
 
-**Enhancements:**
-- Added ErrorBoundary component with graceful error handling and retry functionality
-- Implemented lazy loading with Suspense for non-critical pages (improves initial load time)
-- Created LoadingSkeletons.tsx with various skeleton components (PageSkeleton, CardSkeleton, ListSkeleton, etc.)
-- Created EmptyStates.tsx with pre-configured empty state components for common scenarios
-- Created PageTransition.tsx with smooth page transition animations
+**Clients Section:**
+- All Clients - Main client list with notes integration
+- Care Plans - "About Me", daily living, health, goals, support network
+- Risk & Safety - Risk assessments, safety plans, emergency protocols
 
-**Polish:**
-- Enhanced Login page with:
-  - Real-time form validation with animated error messages
-  - Proper accessibility attributes (aria-invalid, aria-describedby, autocomplete)
-  - Labels associated with inputs using htmlFor
-  - Focus ring styles
-  - Loading state feedback
-- Redesigned 404 page with:
-  - Large visual "404" with search icon overlay
-  - Go Back and Go Home buttons
-  - Displays attempted path
-- Added CSS utilities for:
-  - Focus ring styles for keyboard navigation
-  - Skip link styles for accessibility
-  - Reduced motion preference support
-  - Custom scrollbar styles
-  - Scrollbar-none utility
+**My Profile Section (Workers):**
+- My Roster - Personal weekly roster with shift details
+- My Certs - Personal compliance/certification documents
+- My Timesheets - Auto-generated from check-ins, submit for approval
 
-**Code Quality:**
-- Added data-testid attributes throughout for testing
-- Optimized React Query defaults (staleTime, refetchOnWindowFocus)
-- TypeScript compiles without errors
+**Other Updates:**
+- Incidents - Can be linked to client or general work incident
+- Financials - Unchanged
+- Reports - Unchanged
+- Settings - Unchanged
+
+#### UI/UX Improvements
+1. **Collapsible Sidebar Groups** - Staff and Clients sections collapse/expand
+2. **Fixed Sidebar Scroll** - No longer jumps to top when clicking nav items
+3. **Maureen Chatbot Photo** - Replaced speech bubble with welcoming photo
+
+#### New Pages Created
+- `/app/frontend/src/pages/StaffHR.tsx` - HR documents management
+- `/app/frontend/src/pages/StaffTraining.tsx` - Training modules with NDIS & aged care content
+- `/app/frontend/src/pages/ClientCarePlans.tsx` - Care plan management
+- `/app/frontend/src/pages/ClientRisk.tsx` - Risk assessments & safety plans
+- `/app/frontend/src/pages/MyRoster.tsx` - Worker's personal roster view
+- `/app/frontend/src/pages/MyTimesheets.tsx` - Worker's timesheet management
+
+### Previous Sessions
+- Complete platform redesign (Option 1 admin, Option 3 worker)
+- Mobile-optimized worker pages (Check-In, Notes)
+- Error boundaries, loading skeletons, empty states
+- Form validation improvements
+- Accessibility enhancements
 
 ## Architecture
 
 ```
-/app
-├── backend/          # FastAPI backend
-├── frontend/src/
-│   ├── App.tsx              # Main router with ErrorBoundary & Suspense
-│   ├── main.tsx             # Entry point
-│   ├── index.css            # Global styles with accessibility utilities
-│   ├── components/
-│   │   ├── AppLayout.tsx    # Admin layout
-│   │   ├── AppSidebar.tsx   # Admin sidebar
-│   │   ├── WorkerLayout.tsx # Worker mobile layout
-│   │   ├── ErrorBoundary.tsx    # Error boundary component
-│   │   ├── LoadingSkeletons.tsx # Skeleton loading components
-│   │   ├── EmptyStates.tsx      # Empty state components
-│   │   ├── PageTransition.tsx   # Page transition animations
-│   │   └── ui-kit.tsx       # Shared UI components
-│   ├── pages/
-│   │   ├── Dashboard.tsx    # Admin dashboard
-│   │   ├── WorkerHome.tsx   # Worker home
-│   │   ├── WorkerCheckIn.tsx # Mobile check-in
-│   │   ├── WorkerNotes.tsx  # Mobile notes
-│   │   ├── Login.tsx        # Enhanced login with validation
-│   │   ├── NotFound.tsx     # Polished 404 page
-│   │   └── ...             # Other pages
-│   └── contexts/
-│       └── AuthContext.tsx  # Auth state
+/app/frontend/src/
+├── App.tsx                    # Routes with new structure
+├── components/
+│   ├── AppSidebar.tsx         # Collapsible navigation
+│   ├── AIChatbot.tsx          # Maureen with photo
+│   ├── ErrorBoundary.tsx
+│   ├── LoadingSkeletons.tsx
+│   └── EmptyStates.tsx
+├── pages/
+│   ├── Staff.tsx              # All Staff
+│   ├── StaffHR.tsx            # HR & Onboarding
+│   ├── StaffTraining.tsx      # Training Modules
+│   ├── Clients.tsx            # All Clients
+│   ├── ClientCarePlans.tsx    # Care Plans
+│   ├── ClientRisk.tsx         # Risk & Safety
+│   ├── MyRoster.tsx           # Worker Roster
+│   ├── MyTimesheets.tsx       # Worker Timesheets
+│   └── ...
+└── assets/
+    └── maureen.png            # Maureen's photo
 ```
 
 ## Tech Stack
@@ -104,26 +84,56 @@ Later expanded to: "Debug, fix, enhance and polish the entire platform."
 - State: React Query, React Context
 - UI: shadcn/ui + custom components
 - Auth: Supabase
-- Backend: FastAPI + MongoDB
+- Backend: FastAPI + MongoDB (Supabase for most features)
 
-## Deployment
-- **Emergent**: Ready (health check passed)
-- **Vercel**: Ready (vercel.json configured)
+## Mocked Features (Demo Data)
+- Training completion percentages (StaffTraining.tsx)
+- My Roster shifts (MyRoster.tsx)
+- My Timesheets entries (MyTimesheets.tsx)
+
+## Routes Summary
+
+| Route | Access | Description |
+|-------|--------|-------------|
+| / | Admin | Dashboard |
+| /staff | Admin | All Staff |
+| /staff/hr | Admin | HR & Onboarding |
+| /staff/training | Admin | Training Modules |
+| /staff/compliance | Admin | Staff Compliance |
+| /clients | All | All Clients |
+| /clients/care-plans | All | Care Plans |
+| /clients/risk | All | Risk & Safety |
+| /roster | All | Main Roster |
+| /timesheets | All | All Timesheets |
+| /invoices | All | Invoices |
+| /incidents | All | Incidents |
+| /my-roster | All | My Roster |
+| /my-compliance | All | My Certs |
+| /my-timesheets | All | My Timesheets |
+| /financials | Admin | Financials |
+| /reports | Admin | Reports |
+| /settings | Admin | Settings |
+| /worker | All | Worker Dashboard |
+| /worker/check-in | All | Mobile Check-In |
+| /worker/notes | All | Mobile Notes |
 
 ## Prioritized Backlog
 
 ### P0 - Critical
-- (None currently - all critical items resolved)
+- (None - all requested features implemented)
 
 ### P1 - High Priority
-- Refine worker sub-pages based on user feedback after real usage
+- Connect training modules to actual LMS/training provider
+- Implement real timesheet auto-generation from check-ins
+- Add actual data persistence for risk assessments
 
 ### P2 - Medium Priority
-- Fix ESLint TypeScript parser configuration (non-blocking)
-- Backend/data improvements if requested
+- Add incident-to-client linking UI
+- Invoice generation from timesheets for subcontractors
+- Fix ESLint TypeScript parser configuration
 
 ### P3 - Future Enhancements
-- Additional mobile-optimized pages for workers (roster detail, client profiles)
+- Dark mode support
 - Push notifications for shift reminders
 - Offline support for check-in/out
-- Dark mode support
+- Document upload functionality for HR docs
