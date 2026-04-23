@@ -9,7 +9,26 @@ Redesign the Carter's Care platform based on provided design mockups, with compr
 
 ## What's Been Implemented
 
-### April 2025 - Portal Upgrades (Current Session)
+### April 2025 - Latest Updates (Current Session)
+
+#### Maureen AI Avatar Upgrade
+- Updated Maureen's chatbot with new uploaded avatar image
+- Image shows in floating button and chat header
+- More welcoming and personal appearance
+
+#### Real Timesheet Auto-Generation
+- MyTimesheets now fetches real data from `shift_checkins` table
+- Hours calculated automatically from check-in/check-out times
+- Shows completed vs in-progress shifts
+- Submit for approval functionality
+
+#### Incident-to-Client Linking UI
+- Added "Client Incident" vs "Work Incident" toggle
+- Client selector only shows when Client Incident is selected
+- Work incidents don't require client selection
+- Better categorization of workplace vs client-related incidents
+
+### April 2025 - Portal Upgrades (Previous Session)
 
 #### New Navigation Structure
 **Staff Section (Admin):**
@@ -124,16 +143,16 @@ Redesign the Carter's Care platform based on provided design mockups, with compr
 
 ### P1 - High Priority
 - Connect training modules to actual LMS/training provider
-- Implement real timesheet auto-generation from check-ins
-- Add actual data persistence for risk assessments
+- Add document upload functionality for HR docs
+- Invoice generation from timesheets for subcontractors
 
 ### P2 - Medium Priority
-- Add incident-to-client linking UI
-- Invoice generation from timesheets for subcontractors
+- Add timesheet approval workflow (manager approval)
 - Fix ESLint TypeScript parser configuration
+- Add notification for expiring compliance documents
 
 ### P3 - Future Enhancements
 - Dark mode support
 - Push notifications for shift reminders
 - Offline support for check-in/out
-- Document upload functionality for HR docs
+- Export timesheets to PDF/CSV
