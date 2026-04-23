@@ -11,6 +11,34 @@ Redesign the Carter's Care platform based on provided design mockups, with compr
 
 ### April 2025 - Latest Updates (Current Session)
 
+#### P1: Supabase Storage Bucket for HR Documents
+- Code handles missing storage bucket gracefully
+- Creates compliance records even without file storage
+- Shows toast notification when storage not configured
+- Ready for bucket creation in Supabase dashboard
+
+#### P2: Approval Notifications
+- NotificationBell component added to header
+- User-specific notifications (separate from system alerts)
+- Notification types: timesheet_approved, timesheet_rejected, document_expiring, incident_reported
+- Timesheet approvals automatically notify staff members
+- Mark as read / Mark all as read functionality
+- 30-second auto-refresh for new notifications
+
+#### P3: Larger Ask Maureen
+- Trigger button: h-14 mobile → h-20 desktop (40% larger)
+- Chat panel: 580px mobile → 680px desktop height
+- Larger header with bigger Maureen photo
+- Larger message text and input
+
+#### P4: Dynamic Responsive Sizing
+- Mobile: 70vh height, full-width panel
+- Tablet: 480px width, 620px height
+- Desktop: 520px width, 680px height
+- Expand/Minimize button for full-screen mode
+- Hidden expand button on very small screens
+- Escape key to close/minimize
+
 #### Timesheet Approval Workflow (P2)
 - Status filter dropdown (all, pending, submitted, approved, rejected, paid)
 - Checkbox selection for pending/submitted timesheets
@@ -150,15 +178,15 @@ Redesign the Carter's Care platform based on provided design mockups, with compr
 
 ### P1 - High Priority
 - Connect training modules to actual LMS/training provider
-- Add Supabase storage bucket for HR documents (currently records without files)
+- Create Supabase `notifications` table for persistent notifications
+- Create Supabase `hr-documents` storage bucket
 
 ### P2 - Medium Priority
-- Add timesheet approval notifications (email/push)
+- Email notifications for timesheet approvals (SendGrid/Resend)
+- Push notifications (Firebase)
 - Fix ESLint TypeScript parser configuration
-- Add notification for expiring compliance documents
 
 ### P3 - Future Enhancements
 - Dark mode support
-- Push notifications for shift reminders
 - Offline support for check-in/out
 - Export timesheets/invoices to PDF
