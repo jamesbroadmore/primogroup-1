@@ -192,6 +192,7 @@ function AddIncidentDialog({ onClose }: { onClose: () => void }) {
     },
   });
 
+  const [incidentCategory, setIncidentCategory] = useState<"client" | "work">("client");
   const [form, setForm] = useState({
     incident_type: "injury", severity: "low", client_id: "",
     description: "", location: "", immediate_action: "",
@@ -203,9 +204,12 @@ function AddIncidentDialog({ onClose }: { onClose: () => void }) {
     mutationFn: async () => {
       if (!form.description.trim()) throw new Error("Description is required");
       if (!staffProfile) throw new Error("Your account is not linked to a staff record");
+      if (incidentCategory === "client" && !form.client_id) throw new Error("Please select a client for client-related incidents");
+      
       const { error } = await supabase.from("incidents").insert({
         incident_type: form.incident_type, severity: form.severity,
-        client_id: form.client_id || null, description: form.description.trim(),
+        client_id: incidentCategory === "client" ? form.client_id : null, 
+        description: form.description.trim(),
         location: form.location.trim() || null, immediate_action: form.immediate_action.trim() || null,
         incident_date: form.incident_date, reported_by: staffProfile, created_by: user?.id,
         injury_occurred: form.injury_occurred, medical_attention_required: form.medical_attention_required,
@@ -226,6 +230,44 @@ function AddIncidentDialog({ onClose }: { onClose: () => void }) {
     <DialogOverlay onClose={onClose}>
       <DialogHeader title="Report Incident" onClose={onClose} gradient="linear-gradient(90deg, #f87171, #ef4444)" />
       <form onSubmit={(e) => { e.preventDefault(); mutation.mutate(); }} className="p-6 space-y-4">
+        {/* Incident Category Toggle */}
+        <div className="space-y-2">
+          <label className="text-xs font-semibold text-slate-600 uppercase tracking-wide">Incident Category</label>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setIncidentCategory("client")}
+              data-testid="incident-category-client"
+              className={`flex-1 h-12 rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2 ${
+                incidentCategory === "client"
+                  ? "bg-purple-100 text-purple-700 border-2 border-purple-300"
+                  : "bg-slate-100 text-slate-600 border-2 border-transparent hover:bg-slate-200"
+              }`}
+            >
+              <AlertTriangle className="h-4 w-4" />
+              Client Incident
+            </button>
+            <button
+              type="button"
+              onClick={() => { setIncidentCategory("work"); setForm({ ...form, client_id: "" }); }}
+              data-testid="incident-category-work"
+              className={`flex-1 h-12 rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2 ${
+                incidentCategory === "work"
+                  ? "bg-orange-100 text-orange-700 border-2 border-orange-300"
+                  : "bg-slate-100 text-slate-600 border-2 border-transparent hover:bg-slate-200"
+              }`}
+            >
+              <Shield className="h-4 w-4" />
+              Work Incident
+            </button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {incidentCategory === "client" 
+              ? "Incident involving or affecting a client" 
+              : "Workplace incident not directly involving a client (e.g., vehicle accident, staff injury)"}
+          </p>
+        </div>
+
         <div className="grid grid-cols-2 gap-4">
           <FormField label="Type">
             <FormSelect value={form.incident_type} onChange={(v) => setForm({ ...form, incident_type: v })}>
@@ -241,14 +283,19 @@ function AddIncidentDialog({ onClose }: { onClose: () => void }) {
             </FormSelect>
           </FormField>
         </div>
-        <FormField label="Client">
-          <FormSelect value={form.client_id} onChange={(v) => setForm({ ...form, client_id: v })}>
-            <option value="">Select client (optional)...</option>
-            {clientList.map((c: any) => (
-              <option key={c.id} value={c.id}>{c.preferred_name ? `${c.preferred_name} ${c.last_name}` : `${c.first_name} ${c.last_name}`}</option>
-            ))}
-          </FormSelect>
-        </FormField>
+
+        {/* Client Selector - Only show for client incidents */}
+        {incidentCategory === "client" && (
+          <FormField label="Client" required>
+            <FormSelect value={form.client_id} onChange={(v) => setForm({ ...form, client_id: v })} data-testid="incident-client-select">
+              <option value="">Select client...</option>
+              {clientList.map((c: any) => (
+                <option key={c.id} value={c.id}>{c.preferred_name ? `${c.preferred_name} ${c.last_name}` : `${c.first_name} ${c.last_name}`}</option>
+              ))}
+            </FormSelect>
+          </FormField>
+        )}
+
         <FormField label="Date">
           <FormInput type="date" value={form.incident_date} onChange={(v) => setForm({ ...form, incident_date: v })} />
         </FormField>
