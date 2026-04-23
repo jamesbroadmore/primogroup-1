@@ -1,24 +1,28 @@
+import { useState, useRef, useEffect } from "react";
 import {
   LayoutDashboard,
   Users,
   UserCircle,
   CalendarDays,
-  MapPinCheck,
   Clock,
   FileText,
   AlertTriangle,
   ShieldCheck,
-  FileUp,
   DollarSign,
   Receipt,
   BarChart3,
   Settings,
   LogOut,
-  GraduationCap,
   ChevronRight,
+  ChevronDown,
+  Briefcase,
+  GraduationCap,
+  FileCheck,
+  Heart,
+  ClipboardList,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   Sidebar,
@@ -27,7 +31,6 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import cartersIcon from "@/assets/icon.png";
-import cartersLogo from "@/assets/Carters-Logo.png";
 
 type NavItem = {
   title: string;
@@ -40,6 +43,7 @@ type NavItem = {
 type NavGroup = {
   label: string;
   adminOnly?: boolean;
+  collapsible?: boolean;
   items: NavItem[];
 };
 
@@ -52,17 +56,29 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
-    label: "People",
+    label: "Staff",
+    adminOnly: true,
+    collapsible: true,
     items: [
-      { title: "Staff", url: "/staff", icon: Users, adminOnly: true, iconClass: "icon-blue" },
-      { title: "Clients", url: "/clients", icon: UserCircle, adminOnly: false, iconClass: "icon-teal" },
+      { title: "All Staff", url: "/staff", icon: Users, adminOnly: true, iconClass: "icon-blue" },
+      { title: "HR & Onboarding", url: "/staff/hr", icon: Briefcase, adminOnly: true, iconClass: "icon-purple" },
+      { title: "Training", url: "/staff/training", icon: GraduationCap, adminOnly: true, iconClass: "icon-pink" },
+      { title: "Compliance", url: "/staff/compliance", icon: ShieldCheck, adminOnly: true, iconClass: "icon-teal" },
+    ],
+  },
+  {
+    label: "Clients",
+    collapsible: true,
+    items: [
+      { title: "All Clients", url: "/clients", icon: UserCircle, adminOnly: false, iconClass: "icon-teal" },
+      { title: "Care Plans", url: "/clients/care-plans", icon: Heart, adminOnly: false, iconClass: "icon-pink" },
+      { title: "Risk & Safety", url: "/clients/risk", icon: AlertTriangle, adminOnly: false, iconClass: "icon-orange" },
     ],
   },
   {
     label: "Shifts",
     items: [
       { title: "Roster", url: "/roster", icon: CalendarDays, adminOnly: false, iconClass: "icon-orange" },
-      { title: "Check-In", url: "/check-in", icon: MapPinCheck, adminOnly: false, iconClass: "icon-green" },
       { title: "Timesheets", url: "/timesheets", icon: Clock, adminOnly: false, iconClass: "icon-yellow" },
       { title: "Invoices", url: "/invoices", icon: Receipt, adminOnly: false, iconClass: "icon-indigo" },
     ],
@@ -70,15 +86,15 @@ const navGroups: NavGroup[] = [
   {
     label: "Records",
     items: [
-      { title: "Case Notes", url: "/case-notes", icon: FileText, adminOnly: false, iconClass: "icon-blue" },
       { title: "Incidents", url: "/incidents", icon: AlertTriangle, adminOnly: false, iconClass: "icon-orange" },
     ],
   },
   {
-    label: "Compliance",
+    label: "My Profile",
     items: [
-      { title: "My Certs", url: "/my-compliance", icon: FileUp, adminOnly: false, iconClass: "icon-green" },
-      { title: "Compliance", url: "/compliance", icon: ShieldCheck, adminOnly: true, iconClass: "icon-teal" },
+      { title: "My Roster", url: "/my-roster", icon: CalendarDays, adminOnly: false, iconClass: "icon-blue" },
+      { title: "My Certs", url: "/my-compliance", icon: FileCheck, adminOnly: false, iconClass: "icon-green" },
+      { title: "My Timesheets", url: "/my-timesheets", icon: Clock, adminOnly: false, iconClass: "icon-yellow" },
     ],
   },
   {
@@ -90,9 +106,9 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
-    label: "Other",
+    label: "Settings",
+    adminOnly: true,
     items: [
-      { title: "Onboarding", url: "/onboarding", icon: GraduationCap, adminOnly: false, iconClass: "icon-pink" },
       { title: "Settings", url: "/settings", icon: Settings, adminOnly: true, iconClass: "icon-indigo" },
     ],
   },
@@ -102,7 +118,48 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
+  const navigate = useNavigate();
   const { user, signOut, isAdmin } = useAuth();
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const prevPathRef = useRef(location.pathname);
+  
+  // Track expanded groups
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() => {
+    // Auto-expand groups based on current path
+    const expanded = new Set<string>();
+    navGroups.forEach(group => {
+      if (group.items.some(item => location.pathname.startsWith(item.url) && item.url !== "/")) {
+        expanded.add(group.label);
+      }
+    });
+    return expanded;
+  });
+
+  // Preserve scroll position when navigating
+  useEffect(() => {
+    // Only prevent scroll reset on navigation, not on initial load
+    if (prevPathRef.current !== location.pathname) {
+      prevPathRef.current = location.pathname;
+      // Auto-expand group containing current route
+      navGroups.forEach(group => {
+        if (group.items.some(item => location.pathname.startsWith(item.url) && item.url !== "/")) {
+          setExpandedGroups(prev => new Set([...prev, group.label]));
+        }
+      });
+    }
+  }, [location.pathname]);
+
+  const toggleGroup = (label: string) => {
+    setExpandedGroups(prev => {
+      const next = new Set(prev);
+      if (next.has(label)) {
+        next.delete(label);
+      } else {
+        next.add(label);
+      }
+      return next;
+    });
+  };
 
   const visibleGroups = navGroups
     .filter((g) => !g.adminOnly || isAdmin)
@@ -123,7 +180,7 @@ export function AppSidebar() {
     <Sidebar
       collapsible="icon"
       className="border-r border-sidebar-border bg-white shadow-sm"
-      style={{ "--sidebar-width": "220px" } as any}
+      style={{ "--sidebar-width": "240px" } as any}
     >
       {/* Logo Header */}
       <div
@@ -150,65 +207,94 @@ export function AppSidebar() {
         )}
       </div>
 
-      <SidebarContent className="pt-3 pb-2 overflow-y-auto scrollbar-thin">
-        {visibleGroups.map((group) => (
-          <div key={group.label} className="mb-1">
-            {!collapsed && (
-              <p className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-semibold px-4 mb-1.5">
-                {group.label}
-              </p>
-            )}
-            <div className="space-y-0.5 px-2">
-              {group.items.map((item) => {
-                const isActive =
-                  item.url === "/"
-                    ? location.pathname === "/"
-                    : location.pathname.startsWith(item.url);
+      <SidebarContent 
+        ref={scrollRef}
+        className="pt-3 pb-2 overflow-y-auto scrollbar-thin"
+      >
+        {visibleGroups.map((group) => {
+          const isExpanded = expandedGroups.has(group.label);
+          const hasActiveItem = group.items.some(item => 
+            item.url === "/" ? location.pathname === "/" : location.pathname.startsWith(item.url)
+          );
 
-                return (
-                  <NavLink
-                    key={item.title}
-                    to={item.url}
-                    end={item.url === "/"}
-                    className={`group flex items-center gap-3 rounded-xl px-2.5 py-2 transition-all duration-150 ${
-                      isActive
-                        ? "bg-primary/8 shadow-sm"
-                        : "hover:bg-sidebar-accent"
-                    } ${collapsed ? "justify-center px-2" : ""}`}
-                    activeClassName=""
-                    title={collapsed ? item.title : undefined}
+          return (
+            <div key={group.label} className="mb-1">
+              {!collapsed && (
+                group.collapsible ? (
+                  <button
+                    onClick={() => toggleGroup(group.label)}
+                    className={`w-full flex items-center justify-between text-[10px] uppercase tracking-widest font-semibold px-4 mb-1.5 py-1 rounded-lg transition-colors ${
+                      hasActiveItem ? "text-primary" : "text-muted-foreground/60 hover:text-muted-foreground"
+                    }`}
                   >
-                    {/* Colored Icon Box */}
-                    <div
-                      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl transition-all duration-150 ${item.iconClass} ${
-                        isActive ? "shadow-md scale-105" : "opacity-80 group-hover:opacity-100 group-hover:scale-105"
-                      }`}
-                    >
-                      <item.icon className="h-4 w-4 text-white" />
-                    </div>
+                    <span>{group.label}</span>
+                    {isExpanded ? (
+                      <ChevronDown className="h-3 w-3" />
+                    ) : (
+                      <ChevronRight className="h-3 w-3" />
+                    )}
+                  </button>
+                ) : (
+                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground/60 font-semibold px-4 mb-1.5">
+                    {group.label}
+                  </p>
+                )
+              )}
+              
+              {(!group.collapsible || isExpanded || collapsed) && (
+                <div className="space-y-0.5 px-2">
+                  {group.items.map((item) => {
+                    const isActive =
+                      item.url === "/"
+                        ? location.pathname === "/"
+                        : location.pathname.startsWith(item.url);
 
-                    {!collapsed && (
-                      <div className="flex flex-1 items-center justify-between min-w-0">
-                        <span
-                          className={`text-[13px] font-medium truncate ${
-                            isActive
-                              ? "text-primary font-semibold"
-                              : "text-sidebar-foreground group-hover:text-sidebar-accent-foreground"
+                    return (
+                      <NavLink
+                        key={item.title}
+                        to={item.url}
+                        end={item.url === "/"}
+                        className={`group flex items-center gap-3 rounded-xl px-2.5 py-2 transition-all duration-150 ${
+                          isActive
+                            ? "bg-primary/8 shadow-sm"
+                            : "hover:bg-sidebar-accent"
+                        } ${collapsed ? "justify-center px-2" : ""}`}
+                        activeClassName=""
+                        title={collapsed ? item.title : undefined}
+                      >
+                        {/* Colored Icon Box */}
+                        <div
+                          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl transition-all duration-150 ${item.iconClass} ${
+                            isActive ? "shadow-md scale-105" : "opacity-80 group-hover:opacity-100 group-hover:scale-105"
                           }`}
                         >
-                          {item.title}
-                        </span>
-                        {isActive && (
-                          <ChevronRight className="h-3 w-3 text-primary shrink-0 ml-1" />
+                          <item.icon className="h-4 w-4 text-white" />
+                        </div>
+
+                        {!collapsed && (
+                          <div className="flex flex-1 items-center justify-between min-w-0">
+                            <span
+                              className={`text-[13px] font-medium truncate ${
+                                isActive
+                                  ? "text-primary font-semibold"
+                                  : "text-sidebar-foreground group-hover:text-sidebar-accent-foreground"
+                              }`}
+                            >
+                              {item.title}
+                            </span>
+                            {isActive && (
+                              <ChevronRight className="h-3 w-3 text-primary shrink-0 ml-1" />
+                            )}
+                          </div>
                         )}
-                      </div>
-                    )}
-                  </NavLink>
-                );
-              })}
+                      </NavLink>
+                    );
+                  })}
+                </div>
+              )}
             </div>
-          </div>
-        ))}
+          );
+        })}
       </SidebarContent>
 
       {/* Footer / User Profile */}

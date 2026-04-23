@@ -17,7 +17,14 @@ import WorkerHome from "./pages/WorkerHome";
 
 // Lazy load less critical pages for better initial load
 const Staff = lazy(() => import("./pages/Staff"));
+const StaffHR = lazy(() => import("./pages/StaffHR"));
+const StaffTraining = lazy(() => import("./pages/StaffTraining"));
+const StaffCompliance = lazy(() => import("./pages/Compliance")); // Reuse compliance page
+
 const Clients = lazy(() => import("./pages/Clients"));
+const ClientCarePlans = lazy(() => import("./pages/ClientCarePlans"));
+const ClientRisk = lazy(() => import("./pages/ClientRisk"));
+
 const Roster = lazy(() => import("./pages/Roster"));
 const ShiftCheckIn = lazy(() => import("./pages/ShiftCheckIn"));
 const Timesheets = lazy(() => import("./pages/Timesheets"));
@@ -30,6 +37,8 @@ const Reports = lazy(() => import("./pages/Reports"));
 const SettingsPage = lazy(() => import("./pages/SettingsPage"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const MyCompliance = lazy(() => import("./pages/MyCompliance"));
+const MyRoster = lazy(() => import("./pages/MyRoster"));
+const MyTimesheets = lazy(() => import("./pages/MyTimesheets"));
 const WorkerCheckIn = lazy(() => import("./pages/WorkerCheckIn"));
 const WorkerNotes = lazy(() => import("./pages/WorkerNotes"));
 
@@ -66,7 +75,7 @@ const App = () => (
               {/* Public routes */}
               <Route path="/login" element={<Login />} />
 
-              {/* Admin-only pages */}
+              {/* Admin Dashboard */}
               <Route
                 path="/"
                 element={
@@ -75,6 +84,8 @@ const App = () => (
                   </ProtectedRoute>
                 }
               />
+
+              {/* Staff Section (Admin) */}
               <Route
                 path="/staff"
                 element={
@@ -86,77 +97,37 @@ const App = () => (
                 }
               />
               <Route
-                path="/compliance"
+                path="/staff/hr"
                 element={
                   <ProtectedRoute adminOnly>
                     <Suspense fallback={<PageLoader />}>
-                      <Compliance />
+                      <StaffHR />
                     </Suspense>
                   </ProtectedRoute>
                 }
               />
               <Route
-                path="/financials"
+                path="/staff/training"
                 element={
                   <ProtectedRoute adminOnly>
                     <Suspense fallback={<PageLoader />}>
-                      <Financials />
+                      <StaffTraining />
                     </Suspense>
                   </ProtectedRoute>
                 }
               />
               <Route
-                path="/reports"
+                path="/staff/compliance"
                 element={
                   <ProtectedRoute adminOnly>
                     <Suspense fallback={<PageLoader />}>
-                      <Reports />
-                    </Suspense>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/settings"
-                element={
-                  <ProtectedRoute adminOnly>
-                    <Suspense fallback={<PageLoader />}>
-                      <SettingsPage />
+                      <StaffCompliance />
                     </Suspense>
                   </ProtectedRoute>
                 }
               />
 
-              {/* Worker app routes */}
-              <Route
-                path="/worker"
-                element={
-                  <ProtectedRoute>
-                    <WorkerHome />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/worker/check-in"
-                element={
-                  <ProtectedRoute>
-                    <Suspense fallback={<PageLoader />}>
-                      <WorkerCheckIn />
-                    </Suspense>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/worker/notes"
-                element={
-                  <ProtectedRoute>
-                    <Suspense fallback={<PageLoader />}>
-                      <WorkerNotes />
-                    </Suspense>
-                  </ProtectedRoute>
-                }
-              />
-
-              {/* All authenticated users */}
+              {/* Clients Section */}
               <Route
                 path="/clients"
                 element={
@@ -167,6 +138,28 @@ const App = () => (
                   </ProtectedRoute>
                 }
               />
+              <Route
+                path="/clients/care-plans"
+                element={
+                  <ProtectedRoute>
+                    <Suspense fallback={<PageLoader />}>
+                      <ClientCarePlans />
+                    </Suspense>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/clients/risk"
+                element={
+                  <ProtectedRoute>
+                    <Suspense fallback={<PageLoader />}>
+                      <ClientRisk />
+                    </Suspense>
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Shifts Section */}
               <Route
                 path="/roster"
                 element={
@@ -207,6 +200,8 @@ const App = () => (
                   </ProtectedRoute>
                 }
               />
+
+              {/* Records Section */}
               <Route
                 path="/case-notes"
                 element={
@@ -227,6 +222,18 @@ const App = () => (
                   </ProtectedRoute>
                 }
               />
+
+              {/* My Profile Section (Worker) */}
+              <Route
+                path="/my-roster"
+                element={
+                  <ProtectedRoute>
+                    <Suspense fallback={<PageLoader />}>
+                      <MyRoster />
+                    </Suspense>
+                  </ProtectedRoute>
+                }
+              />
               <Route
                 path="/my-compliance"
                 element={
@@ -238,11 +245,97 @@ const App = () => (
                 }
               />
               <Route
+                path="/my-timesheets"
+                element={
+                  <ProtectedRoute>
+                    <Suspense fallback={<PageLoader />}>
+                      <MyTimesheets />
+                    </Suspense>
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Finance Section (Admin) */}
+              <Route
+                path="/financials"
+                element={
+                  <ProtectedRoute adminOnly>
+                    <Suspense fallback={<PageLoader />}>
+                      <Financials />
+                    </Suspense>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/reports"
+                element={
+                  <ProtectedRoute adminOnly>
+                    <Suspense fallback={<PageLoader />}>
+                      <Reports />
+                    </Suspense>
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Settings (Admin) */}
+              <Route
+                path="/settings"
+                element={
+                  <ProtectedRoute adminOnly>
+                    <Suspense fallback={<PageLoader />}>
+                      <SettingsPage />
+                    </Suspense>
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Legacy routes - kept for compatibility */}
+              <Route
+                path="/compliance"
+                element={
+                  <ProtectedRoute adminOnly>
+                    <Suspense fallback={<PageLoader />}>
+                      <Compliance />
+                    </Suspense>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
                 path="/onboarding"
                 element={
                   <ProtectedRoute>
                     <Suspense fallback={<PageLoader />}>
                       <Onboarding />
+                    </Suspense>
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* Worker app routes */}
+              <Route
+                path="/worker"
+                element={
+                  <ProtectedRoute>
+                    <WorkerHome />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/worker/check-in"
+                element={
+                  <ProtectedRoute>
+                    <Suspense fallback={<PageLoader />}>
+                      <WorkerCheckIn />
+                    </Suspense>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/worker/notes"
+                element={
+                  <ProtectedRoute>
+                    <Suspense fallback={<PageLoader />}>
+                      <WorkerNotes />
                     </Suspense>
                   </ProtectedRoute>
                 }
