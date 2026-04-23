@@ -1,6 +1,7 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AIChatbot } from "@/components/AIChatbot";
 import { AppSidebar } from "@/components/AppSidebar";
+import { NotificationBell } from "@/components/NotificationBell";
 import { Bell, AlertTriangle, ShieldCheck, Clock, X, Search } from "lucide-react";
 import { getPerthDate } from "@/lib/perth-time";
 import { useState, useRef, useEffect } from "react";
@@ -126,7 +127,10 @@ export function AppLayout({ children, title }: AppLayoutProps) {
                 <Search className="h-4 w-4" />
               </button>
 
-              {/* Notification Bell */}
+              {/* User Notifications (approvals, etc.) */}
+              <NotificationBell />
+
+              {/* System Notification Bell */}
               <div className="relative" ref={panelRef}>
                 <button
                   onClick={() => setNotifOpen(!notifOpen)}

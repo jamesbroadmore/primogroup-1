@@ -9,6 +9,7 @@ import { formatPerthDate, formatPerthTime, extractPerthTime } from "@/lib/perth-
 import { TimesheetDetailDialog } from "@/components/timesheets/TimesheetDetailDialog";
 import { fullName } from "@/lib/display-names";
 import { Avatar, TableContainer, TableHead, Th, Td, OutlineButton, StatusBadge, EmptyState, DialogOverlay, DialogHeader, PrimaryButton } from "@/components/ui-kit";
+import { createNotification } from "@/components/NotificationBell";
 
 const STATUS_CONFIG: Record<string, { bg: string; text: string; label: string }> = {
   pending: { bg: "bg-amber-100", text: "text-amber-700", label: "Pending" },
@@ -44,7 +45,7 @@ export default function Timesheets() {
     : timesheets.filter((t: any) => t.status === filterStatus);
 
   const approvalMutation = useMutation({
-    mutationFn: async ({ ids, status, note }: { ids: string[]; status: string; note?: string }) => {
+    mutationFn: async ({ ids, status, note, timesheets: selectedTs }: { ids: string[]; status: string; note?: string; timesheets: any[] }) => {
       const { error } = await supabase
         .from("timesheets")
         .update({ 
@@ -54,10 +55,31 @@ export default function Timesheets() {
         })
         .in("id", ids);
       if (error) throw error;
+
+      // Send notifications to staff members
+      for (const ts of selectedTs) {
+        // Get user_id from staff profile
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("user_id")
+          .eq("staff_id", ts.staff_id)
+          .single();
+
+        if (profile?.user_id) {
+          const notifType = status === "approved" ? "timesheet_approved" : "timesheet_rejected";
+          const title = status === "approved" ? "Timesheet Approved" : "Timesheet Rejected";
+          const message = status === "approved" 
+            ? `Your timesheet for ${ts.shift_date} (${ts.total_hours}h) has been approved.${note ? ` Note: ${note}` : ""}`
+            : `Your timesheet for ${ts.shift_date} has been rejected.${note ? ` Reason: ${note}` : ""}`;
+          
+          await createNotification(profile.user_id, notifType, title, message, "/my-timesheets");
+        }
+      }
     },
     onSuccess: (_, { status }) => {
       toast.success(`Timesheet(s) ${status}`);
       queryClient.invalidateQueries({ queryKey: ["timesheets"] });
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
       setShowApprovalDialog(false);
       setSelectedForApproval([]);
     },
@@ -274,8 +296,8 @@ export default function Timesheets() {
         <ApprovalDialog 
           timesheets={selectedForApproval}
           onClose={() => setShowApprovalDialog(false)}
-          onApprove={(note) => approvalMutation.mutate({ ids: selectedForApproval.map(t => t.id), status: "approved", note })}
-          onReject={(note) => approvalMutation.mutate({ ids: selectedForApproval.map(t => t.id), status: "rejected", note })}
+          onApprove={(note) => approvalMutation.mutate({ ids: selectedForApproval.map(t => t.id), status: "approved", note, timesheets: selectedForApproval })}
+          onReject={(note) => approvalMutation.mutate({ ids: selectedForApproval.map(t => t.id), status: "rejected", note, timesheets: selectedForApproval })}
           isLoading={approvalMutation.isPending}
         />
       )}
