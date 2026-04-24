@@ -251,7 +251,7 @@ export default function StaffHR() {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                           {HR_DOC_TYPES.map((docType) => {
-                            const existingDoc = staffDocs.find((d: any) => d.document_type === docType.key);
+                            const existingDoc = staffDocs.find((d: any) => d.record_type === docType.key);
                             const statusColor = existingDoc?.status === "valid" 
                               ? "border-emerald-200 bg-emerald-50" 
                               : existingDoc?.status === "expiring_soon"
@@ -416,16 +416,16 @@ function DocumentUploadDialog({
         }
       }
 
-      // Create compliance record
+      // Create compliance record - using existing schema fields with fallback
+      const docLabel = HR_DOC_TYPES.find(d => d.key === selectedDocType)?.label || selectedDocType;
       const { error } = await supabase.from("compliance_records").insert({
         staff_id: staff.id,
-        document_type: selectedDocType,
-        document_name: HR_DOC_TYPES.find(d => d.key === selectedDocType)?.label || selectedDocType,
+        record_type: selectedDocType,
+        record_name: docLabel,
         document_url: documentUrl,
-        document_number: documentNumber || null,
         expiry_date: expiryDate,
         status: "valid",
-        uploaded_at: new Date().toISOString(),
+        notes: documentNumber ? `Document #: ${documentNumber}` : null,
       });
 
       if (error) throw error;

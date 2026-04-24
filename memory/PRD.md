@@ -9,7 +9,33 @@ Redesign the Carter's Care platform based on provided design mockups, with compr
 
 ## What's Been Implemented
 
-### April 2025 - Latest Updates (Current Session)
+### April 2025 - Latest Updates (Current Session - Fork 2)
+
+#### Navigation Sidebar Cleanup
+- Reorganized navigation into clear logical groups:
+  - **Main**: Dashboard (admin only)
+  - **Team**: Staff, HR & Docs, Training (admin, collapsible)
+  - **Clients**: All Clients, Care Plans, Risk & Safety (collapsible)
+  - **Operations**: Roster, Timesheets, Incidents
+  - **My Workspace**: My Roster, My Timesheets, My Certs
+  - **Finance**: Invoices, Financials, Reports (admin only)
+  - **System**: Settings (admin only)
+- Added collapsible group headers for Team and Clients
+- Auto-expand groups when navigating to items within them
+- Visual indicators for active groups
+
+#### Supabase Setup Documentation
+- Created `/app/frontend/supabase_setup.md` with:
+  - SQL to create `notifications` table with RLS policies
+  - Instructions to create `hr-documents` storage bucket
+  - Storage policies for secure file uploads
+  - Schema migration for compliance_records additional fields
+
+#### Type Safety Updates
+- Added `notifications` table type definitions to Supabase types
+- Fixed StaffHR.tsx to use existing schema fields (record_type, record_name)
+
+### April 2025 - Previous Updates (Fork 1)
 
 #### P1: Supabase Storage Bucket for HR Documents
 - Code handles missing storage bucket gracefully
@@ -63,7 +89,7 @@ Redesign the Carter's Care platform based on provided design mockups, with compr
 #### Maureen AI Avatar Upgrade
 - Updated Maureen's chatbot with new uploaded avatar image
 
-### April 2025 - Portal Upgrades (Previous Session)
+### April 2025 - Portal Upgrades (Initial Session)
 
 #### New Navigation Structure
 **Staff Section (Admin):**
@@ -114,8 +140,9 @@ Redesign the Carter's Care platform based on provided design mockups, with compr
 /app/frontend/src/
 ├── App.tsx                    # Routes with new structure
 ├── components/
-│   ├── AppSidebar.tsx         # Collapsible navigation
+│   ├── AppSidebar.tsx         # Clean organized navigation
 │   ├── AIChatbot.tsx          # Maureen with photo
+│   ├── NotificationBell.tsx   # Approval notifications
 │   ├── ErrorBoundary.tsx
 │   ├── LoadingSkeletons.tsx
 │   └── EmptyStates.tsx
@@ -129,6 +156,10 @@ Redesign the Carter's Care platform based on provided design mockups, with compr
 │   ├── MyRoster.tsx           # Worker Roster
 │   ├── MyTimesheets.tsx       # Worker Timesheets
 │   └── ...
+├── integrations/
+│   └── supabase/
+│       ├── client.ts          # Supabase client
+│       └── types.ts           # TypeScript types (updated)
 └── assets/
     └── maureen.png            # Maureen's photo
 ```
@@ -139,6 +170,12 @@ Redesign the Carter's Care platform based on provided design mockups, with compr
 - UI: shadcn/ui + custom components
 - Auth: Supabase
 - Backend: FastAPI + MongoDB (Supabase for most features)
+
+## Supabase Setup Required
+
+**User Action Required**: Run the SQL scripts in `/app/frontend/supabase_setup.md`:
+1. Create `notifications` table with RLS policies
+2. Create `hr-documents` storage bucket with storage policies
 
 ## Mocked Features (Demo Data)
 - Training completion percentages (StaffTraining.tsx)
@@ -173,18 +210,16 @@ Redesign the Carter's Care platform based on provided design mockups, with compr
 
 ## Prioritized Backlog
 
-### P0 - Critical
-- (None - all requested features implemented)
+### P0 - Critical (User Action Required)
+- Run Supabase SQL scripts from `/app/frontend/supabase_setup.md`
 
 ### P1 - High Priority
 - Connect training modules to actual LMS/training provider
-- Create Supabase `notifications` table for persistent notifications
-- Create Supabase `hr-documents` storage bucket
+- Test notifications with real Supabase table
 
 ### P2 - Medium Priority
 - Email notifications for timesheet approvals (SendGrid/Resend)
 - Push notifications (Firebase)
-- Fix ESLint TypeScript parser configuration
 
 ### P3 - Future Enhancements
 - Dark mode support
