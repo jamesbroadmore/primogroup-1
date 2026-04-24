@@ -117,14 +117,14 @@ export function AddClientDialog({ open, onClose }: AddClientDialogProps) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
-      <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-3xl bg-white shadow-2xl border border-white/80" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={onClose} data-testid="add-client-dialog-overlay">
+      <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-3xl bg-white shadow-2xl border border-white/80" onClick={(e) => e.stopPropagation()} data-testid="add-client-dialog">
         <div className="flex items-center justify-between p-5 border-b">
           <h2 className="text-lg font-semibold text-card-foreground">Add Client</h2>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="h-5 w-5" /></button>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground" data-testid="add-client-close-btn"><X className="h-5 w-5" /></button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-5 space-y-4">
+        <form onSubmit={handleSubmit} className="p-5 space-y-4" data-testid="add-client-form">
           {/* Funding type first — drives conditional fields */}
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Client Type</p>
           <SelectField label="Funding Type" value={form.funding_type || "ndis"} onChange={(v) => update("funding_type", v)} options={[
@@ -210,10 +210,10 @@ export function AddClientDialog({ open, onClose }: AddClientDialogProps) {
           </div>
 
           <div className="flex justify-end gap-2 pt-2">
-            <button type="button" onClick={onClose} className="h-9 px-4 rounded-xl border text-sm font-medium text-foreground hover:bg-secondary transition-colors">
+            <button type="button" onClick={onClose} className="h-9 px-4 rounded-xl border text-sm font-medium text-foreground hover:bg-secondary transition-colors" data-testid="add-client-cancel-btn">
               Cancel
             </button>
-            <button type="submit" disabled={mutation.isPending} className="h-9 px-4 rounded-xl text-white text-sm font-semibold flex items-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50 shadow-md">
+            <button type="submit" disabled={mutation.isPending} className="h-9 px-4 rounded-xl text-white text-sm font-semibold flex items-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50 shadow-md" data-testid="add-client-submit-btn">
               {mutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
               Add Client
             </button>

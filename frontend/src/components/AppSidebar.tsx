@@ -184,6 +184,7 @@ export function AppSidebar() {
       collapsible="icon"
       className="border-r border-slate-200/80 bg-white"
       style={{ "--sidebar-width": "220px" } as any}
+      data-testid="app-sidebar"
     >
       {/* Logo Header */}
       <div
@@ -255,6 +256,7 @@ export function AppSidebar() {
                         } ${collapsed ? "justify-center px-2" : ""}`}
                         activeClassName=""
                         title={collapsed ? item.title : undefined}
+                        data-testid={`nav-link-${item.url.replace(/\//g, '-').replace(/^-/, '')}`}
                       >
                         {/* Icon */}
                         <div

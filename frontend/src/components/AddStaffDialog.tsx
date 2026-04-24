@@ -127,14 +127,14 @@ export function AddStaffDialog({ open, onClose }: AddStaffDialogProps) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={onClose}>
-      <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-3xl bg-white shadow-2xl border border-white/80" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={onClose} data-testid="add-staff-dialog-overlay">
+      <div className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-3xl bg-white shadow-2xl border border-white/80" onClick={(e) => e.stopPropagation()} data-testid="add-staff-dialog">
         <div className="flex items-center justify-between p-5 border-b">
           <h2 className="text-lg font-semibold text-card-foreground">Add Staff Member</h2>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground"><X className="h-5 w-5" /></button>
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground" data-testid="add-staff-close-btn"><X className="h-5 w-5" /></button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-5 space-y-4">
+        <form onSubmit={handleSubmit} className="p-5 space-y-4" data-testid="add-staff-form">
           <div className="grid grid-cols-3 gap-3">
             <Field label="First Name *" value={form.first_name} onChange={(v) => update("first_name", v)} error={errors.first_name} placeholder="Sarah" />
             <Field label="Surname *" value={form.last_name} onChange={(v) => update("last_name", v)} error={errors.last_name} placeholder="Mitchell" />
@@ -232,10 +232,10 @@ export function AddStaffDialog({ open, onClose }: AddStaffDialogProps) {
           </div>
 
           <div className="flex justify-end gap-2 pt-2">
-            <button type="button" onClick={onClose} className="h-9 px-4 rounded-xl border text-sm font-medium text-foreground hover:bg-secondary transition-colors">
+            <button type="button" onClick={onClose} className="h-9 px-4 rounded-xl border text-sm font-medium text-foreground hover:bg-secondary transition-colors" data-testid="add-staff-cancel-btn">
               Cancel
             </button>
-            <button type="submit" disabled={mutation.isPending} className="h-9 px-4 rounded-xl text-white text-sm font-semibold flex items-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50 shadow-md" style={{ background: "linear-gradient(135deg, #8b5cf6, #7c3aed)" }}>
+            <button type="submit" disabled={mutation.isPending} className="h-9 px-4 rounded-xl text-white text-sm font-semibold flex items-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50 shadow-md" style={{ background: "linear-gradient(135deg, #8b5cf6, #7c3aed)" }} data-testid="add-staff-submit-btn">
               {mutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
               Add Staff
             </button>

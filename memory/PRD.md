@@ -16,13 +16,18 @@ Redesign the Carter's Care platform based on provided design mockups, with compr
   - **Main**: Dashboard (admin only)
   - **Team**: Staff, HR & Docs, Training (admin, collapsible)
   - **Clients**: All Clients, Care Plans, Risk & Safety (collapsible)
-  - **Operations**: Roster, Timesheets, Incidents
-  - **My Workspace**: My Roster, My Timesheets, My Certs
-  - **Finance**: Invoices, Financials, Reports (admin only)
+  - **Operations**: Roster, Timesheets, Incidents (collapsible)
+  - **My Workspace**: My Roster, My Timesheets, My Certs (collapsible)
+  - **Finance**: Invoices, Financials, Reports (admin, collapsible)
   - **System**: Settings (admin only)
-- Added collapsible group headers for Team and Clients
+- Added collapsible group headers for all multi-item groups
 - Auto-expand groups when navigating to items within them
 - Visual indicators for active groups
+
+#### Clickable Cards & Rows
+- Staff table rows now clickable - click anywhere to edit
+- Client cards now clickable - click anywhere to edit
+- Action menus (⋯) still work independently
 
 #### Supabase Setup Documentation
 - Created `/app/frontend/supabase_setup.md` with:
@@ -31,8 +36,13 @@ Redesign the Carter's Care platform based on provided design mockups, with compr
   - Storage policies for secure file uploads
   - Schema migration for compliance_records additional fields
 
-#### Type Safety Updates
-- Added `notifications` table type definitions to Supabase types
+#### Code Quality & Polish
+- Added data-testid attributes to key components:
+  - AppSidebar navigation links
+  - AddStaffDialog, AddClientDialog forms and buttons
+  - Staff rows and Client cards
+- Removed unused imports from StaffHR.tsx
+- Type safety updates for notifications table in Supabase types
 - Fixed StaffHR.tsx to use existing schema fields (record_type, record_name)
 
 ### April 2025 - Previous Updates (Fork 1)

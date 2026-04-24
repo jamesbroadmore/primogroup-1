@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import {
   Briefcase, FileText, Users, GraduationCap, Upload, CheckCircle,
   Clock, AlertTriangle, ChevronRight, ChevronDown, X, Loader2,
-  Eye, Download, Trash2, Plus, Calendar,
+  Eye, Plus,
 } from "lucide-react";
 import { SearchInput, PrimaryButton, EmptyState, DialogOverlay, DialogHeader } from "@/components/ui-kit";
 import { format, addMonths } from "date-fns";
