@@ -179,7 +179,9 @@ export default function Clients() {
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.03 }}
-                  className="rounded-2xl bg-white border border-border/50 shadow-sm hover:shadow-md transition-shadow overflow-hidden"
+                  onClick={() => setEditClient(c)}
+                  className="rounded-2xl bg-white border border-border/50 shadow-sm hover:shadow-md transition-shadow overflow-hidden cursor-pointer"
+                  data-testid={`client-card-${c.id}`}
                 >
                   {/* Top accent line */}
                   <div className="h-1" style={{ background: TABS.find(t => t.key === category)?.gradient || TABS[0].gradient }} />
@@ -265,7 +267,7 @@ function ClientActionMenu({ open, onToggle, onClose, onEdit, onDelete }: {
   }, [open, onClose]);
 
   return (
-    <div ref={ref} className="relative">
+    <div ref={ref} className="relative" onClick={(e) => e.stopPropagation()}>
       <button onClick={(e) => { e.stopPropagation(); onToggle(); }}
         className="h-7 w-7 rounded-lg flex items-center justify-center text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors">
         <MoreHorizontal className="h-3.5 w-3.5" />

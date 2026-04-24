@@ -128,7 +128,12 @@ export default function Staff() {
               </TableHead>
               <tbody className="divide-y divide-slate-100">
                 {filteredStaff.map((s: any) => (
-                  <tr key={s.id} className="hover:bg-slate-50/50 transition-colors">
+                  <tr 
+                    key={s.id} 
+                    onClick={() => setEditStaff(s)}
+                    className="hover:bg-slate-50/50 transition-colors cursor-pointer"
+                    data-testid={`staff-row-${s.id}`}
+                  >
                     <Td>
                       <div className="flex items-center gap-3">
                         <Avatar name={`${s.first_name} ${s.last_name}`} size="sm" />
@@ -179,7 +184,7 @@ function ActionMenu({ open, onToggle, onClose, onEdit, onDelete }: {
   }, [open, onClose]);
 
   return (
-    <div ref={ref} className="relative">
+    <div ref={ref} className="relative" onClick={(e) => e.stopPropagation()}>
       <button
         onClick={(e) => { e.stopPropagation(); onToggle(); }}
         className="h-8 w-8 rounded-xl flex items-center justify-center text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors"
