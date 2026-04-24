@@ -79,6 +79,8 @@ const navGroups: NavGroup[] = [
   },
   {
     label: "Operations",
+    collapsible: true,
+    defaultExpanded: true,
     items: [
       { title: "Roster", url: "/roster", icon: CalendarDays, adminOnly: false, iconClass: "icon-blue" },
       { title: "Timesheets", url: "/timesheets", icon: Clock, adminOnly: false, iconClass: "icon-yellow" },
@@ -87,6 +89,8 @@ const navGroups: NavGroup[] = [
   },
   {
     label: "My Workspace",
+    collapsible: true,
+    defaultExpanded: true,
     items: [
       { title: "My Roster", url: "/my-roster", icon: CalendarDays, adminOnly: false, iconClass: "icon-blue" },
       { title: "My Timesheets", url: "/my-timesheets", icon: Clock, adminOnly: false, iconClass: "icon-yellow" },
@@ -96,6 +100,8 @@ const navGroups: NavGroup[] = [
   {
     label: "Finance",
     adminOnly: true,
+    collapsible: true,
+    defaultExpanded: true,
     items: [
       { title: "Invoices", url: "/invoices", icon: Receipt, adminOnly: true, iconClass: "icon-indigo" },
       { title: "Financials", url: "/financials", icon: DollarSign, adminOnly: true, iconClass: "icon-green" },
