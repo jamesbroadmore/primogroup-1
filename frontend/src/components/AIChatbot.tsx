@@ -1,19 +1,28 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { X, Send, Loader2, User, Maximize2, Minimize2, Sparkles } from "lucide-react";
+import { X, Send, Loader2, User, Maximize2, Minimize2, Sparkles, ExternalLink } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import maureenImg from "@/assets/maureen.png";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_FUNCTIONS_URL || import.meta.env.VITE_SUPABASE_URL + '/functions/v1'}/staff-chat`;
 
-const SUGGESTIONS = [
-  "How do I report an incident?",
-  "What are NDIS Practice Standards?",
-  "Shift check-in process?",
-  "When do compliance docs expire?",
+// Role-based quick actions
+const WORKER_SUGGESTIONS = [
+  "How do I check in for my shift?",
+  "How do I submit my timesheet?",
+  "How do I write a client note?",
+  "What if there's an incident?",
+];
+
+const ADMIN_SUGGESTIONS = [
+  "How do I approve timesheets?",
+  "How do I add a new staff member?",
+  "How do I generate an invoice?",
+  "How do I manage compliance?",
 ];
 
 // Helpful hints that rotate
@@ -25,6 +34,66 @@ const HELPFUL_HINTS = [
   "📝 Ask about client notes",
 ];
 
+// Quick help responses for common questions (role-aware)
+const QUICK_HELP: Record<string, { worker: string; admin: string; links?: { text: string; url: string }[] }> = {
+  "check in": {
+    worker: `**Checking in for your shift:**\n\n1. Go to **My Roster** from the sidebar\n2. Find today's shift\n3. Click the **Check In** button\n4. Confirm your location if prompted\n\n✅ You're checked in! Remember to check out when done.`,
+    admin: `**Staff Check-ins:**\n\n1. Go to **Roster** to see all shifts\n2. Active check-ins show in the dashboard\n3. Click on a shift to see check-in details\n\n📊 View real-time check-in status from the Dashboard.`,
+    links: [{ text: "Go to My Roster", url: "/my-roster" }, { text: "View Dashboard", url: "/" }]
+  },
+  "timesheet": {
+    worker: `**Submitting your timesheet:**\n\n1. Go to **My Timesheets**\n2. Review your hours for the period\n3. Click **Submit for Approval**\n4. Wait for admin approval\n\n💡 Timesheets are auto-generated from your check-ins!`,
+    admin: `**Approving timesheets:**\n\n1. Go to **Timesheets**\n2. Filter by "Pending" or "Submitted"\n3. Select timesheets to approve\n4. Click **Approve Selected** or review individually\n\n💰 After approval, you can generate invoices.`,
+    links: [{ text: "My Timesheets", url: "/my-timesheets" }, { text: "All Timesheets", url: "/timesheets" }]
+  },
+  "client note": {
+    worker: `**Writing a client note:**\n\n1. Go to **Client Notes** in Daily Workflow\n2. Select the client\n3. Click **Add Note**\n4. Fill in the details and save\n\n📝 Notes help track client progress and care.`,
+    admin: `**Managing client notes:**\n\n1. Go to **Client Notes**\n2. Filter by client, date, or staff\n3. Review and approve notes as needed\n\n📋 Export notes for reporting.`,
+    links: [{ text: "Client Notes", url: "/clients" }]
+  },
+  "incident": {
+    worker: `**Reporting an incident:**\n\n1. Go to **Incidents** in Daily Workflow\n2. Click **Report Incident**\n3. Select type: Client or Work incident\n4. Fill in all required details\n5. Submit immediately\n\n⚠️ Report all incidents as soon as possible!`,
+    admin: `**Managing incidents:**\n\n1. Go to **Incidents**\n2. Review open incidents (shown in red)\n3. Investigate and update status\n4. Close when resolved\n\n📊 Dashboard shows incident alerts.`,
+    links: [{ text: "Report Incident", url: "/incidents" }]
+  },
+  "invoice": {
+    worker: `**Invoices:**\n\nInvoices are managed by administrators. Once your timesheet is approved, it can be included in an invoice.\n\n✅ Keep your timesheets up to date!`,
+    admin: `**Generating invoices:**\n\n1. Go to **Invoices** in Admin\n2. Click **Generate Invoice**\n3. Select approved timesheets\n4. Set hourly rate\n5. Download CSV invoice\n\n💡 Only approved timesheets can be invoiced.`,
+    links: [{ text: "Invoices", url: "/invoices" }, { text: "Timesheets", url: "/timesheets" }]
+  },
+  "staff": {
+    worker: `**Your profile:**\n\nContact your administrator to update your profile details or view your compliance documents in **My Tasks**.`,
+    admin: `**Managing staff:**\n\n1. Go to **Staff** in Admin\n2. Click **Add Staff** or click a row to edit\n3. Manage HR docs in **HR & Docs**\n\n📋 Track compliance and certifications.`,
+    links: [{ text: "Staff List", url: "/staff" }, { text: "HR & Docs", url: "/staff/hr" }]
+  },
+  "compliance": {
+    worker: `**Your compliance:**\n\nCheck **My Tasks** to see your certifications and expiry dates. Upload documents when requested by admin.`,
+    admin: `**Managing compliance:**\n\n1. Go to **HR & Docs**\n2. Expand a staff member\n3. Upload required documents\n4. Track expiry dates\n\n⚠️ Dashboard alerts show expiring documents.`,
+    links: [{ text: "HR & Docs", url: "/staff/hr" }]
+  },
+  "roster": {
+    worker: `**Viewing your roster:**\n\n1. Go to **My Roster**\n2. See your upcoming shifts\n3. Check shift details (time, client, location)\n\n📅 Plan ahead with your schedule!`,
+    admin: `**Managing the roster:**\n\n1. Go to **Roster**\n2. View all scheduled shifts\n3. Assign staff to shifts\n4. Manage recurring schedules\n\n📊 Dashboard shows active shifts.`,
+    links: [{ text: "My Roster", url: "/my-roster" }, { text: "Full Roster", url: "/roster" }]
+  },
+  "help": {
+    worker: `**I'm Maureen, your care assistant!**\n\nI can help you with:\n- 📅 **Roster** - View your shifts\n- ⏰ **Timesheets** - Submit hours\n- 📝 **Notes** - Write client notes\n- ⚠️ **Incidents** - Report issues\n\nJust ask me anything!`,
+    admin: `**I'm Maureen, your care assistant!**\n\nAs an admin, I can help with:\n- 👥 **Staff** - Manage team\n- ✅ **Approvals** - Timesheets & docs\n- 💰 **Invoices** - Generate bills\n- 📊 **Reports** - Track everything\n\nJust ask me anything!`,
+    links: []
+  }
+};
+
+// Find matching quick help based on user query
+function findQuickHelp(query: string): { response: string; links?: { text: string; url: string }[] } | null {
+  const q = query.toLowerCase();
+  for (const [key, value] of Object.entries(QUICK_HELP)) {
+    if (q.includes(key)) {
+      return { response: value.worker, links: value.links }; // Default to worker, will be overridden
+    }
+  }
+  return null;
+}
+
 export function AIChatbot({ hasImportantAction = false }: { hasImportantAction?: boolean }) {
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
@@ -34,8 +103,14 @@ export function AIChatbot({ hasImportantAction = false }: { hasImportantAction?:
   const [currentHint, setCurrentHint] = useState(0);
   const [showHint, setShowHint] = useState(true);
   const [hasCheckedNotice, setHasCheckedNotice] = useState(false);
+  const [quickLinks, setQuickLinks] = useState<{ text: string; url: string }[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { user } = useAuth();
+
+  // Determine user role - check if admin
+  const isAdmin = user?.user_metadata?.role === "admin" || user?.email?.includes("admin");
+  const suggestions = isAdmin ? ADMIN_SUGGESTIONS : WORKER_SUGGESTIONS;
 
   // Stop glowing when user opens chat with important action
   useEffect(() => {
@@ -104,75 +179,38 @@ export function AIChatbot({ hasImportantAction = false }: { hasImportantAction?:
     setMessages(updatedMessages);
     setInput("");
     setIsLoading(true);
+    setQuickLinks([]);
 
-    let assistantSoFar = "";
+    // First, try to find a quick help response (instant, no API needed)
+    const q = text.toLowerCase();
+    let quickHelpFound = false;
 
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error("Please log in to use the assistant");
-
-      const resp = await fetch(CHAT_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({ messages: updatedMessages }),
-      });
-
-      if (!resp.ok) {
-        const errData = await resp.json().catch(() => ({}));
-        throw new Error(errData.error || `Request failed (${resp.status})`);
-      }
-
-      if (!resp.body) throw new Error("No response body");
-
-      const reader = resp.body.getReader();
-      const decoder = new TextDecoder();
-      let textBuffer = "";
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        textBuffer += decoder.decode(value, { stream: true });
-
-        let newlineIndex: number;
-        while ((newlineIndex = textBuffer.indexOf("\n")) !== -1) {
-          let line = textBuffer.slice(0, newlineIndex);
-          textBuffer = textBuffer.slice(newlineIndex + 1);
-
-          if (line.endsWith("\r")) line = line.slice(0, -1);
-          if (line.startsWith(":") || line.trim() === "") continue;
-          if (!line.startsWith("data: ")) continue;
-
-          const jsonStr = line.slice(6).trim();
-          if (jsonStr === "[DONE]") break;
-
-          try {
-            const parsed = JSON.parse(jsonStr);
-            const content = parsed.choices?.[0]?.delta?.content as string | undefined;
-            if (content) {
-              assistantSoFar += content;
-              setMessages((prev) => {
-                const last = prev[prev.length - 1];
-                if (last?.role === "assistant") {
-                  return prev.map((m, i) => (i === prev.length - 1 ? { ...m, content: assistantSoFar } : m));
-                }
-                return [...prev, { role: "assistant", content: assistantSoFar }];
-              });
-            }
-          } catch {
-            textBuffer = line + "\n" + textBuffer;
-            break;
-          }
+    for (const [key, value] of Object.entries(QUICK_HELP)) {
+      if (q.includes(key)) {
+        const response = isAdmin ? value.admin : value.worker;
+        // Simulate typing effect for quick responses
+        await new Promise(resolve => setTimeout(resolve, 300));
+        setMessages(prev => [...prev, { role: "assistant", content: response }]);
+        if (value.links && value.links.length > 0) {
+          setQuickLinks(value.links);
         }
+        setIsLoading(false);
+        quickHelpFound = true;
+        break;
       }
-    } catch (e: any) {
-      setMessages((prev) => [...prev, { role: "assistant", content: `Sorry, something went wrong: ${e.message}` }]);
-    } finally {
+    }
+
+    // If no quick help found, provide a helpful fallback
+    if (!quickHelpFound) {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      const fallbackResponse = isAdmin 
+        ? `I'm here to help! Here are some things I can assist with:\n\n**Quick Actions:**\n- "How do I approve timesheets?"\n- "How do I add staff?"\n- "How do I generate an invoice?"\n- "How do I manage compliance?"\n\n**Or try:**\n- Check the **Dashboard** for alerts\n- Go to **Staff** to manage your team\n- View **Reports** for insights\n\n💡 Just ask me about any topic!`
+        : `I'm here to help! Here are some things I can assist with:\n\n**Quick Actions:**\n- "How do I check in?"\n- "How do I submit my timesheet?"\n- "How do I write a client note?"\n- "What if there's an incident?"\n\n**Or try:**\n- Check **My Roster** for your shifts\n- Go to **My Timesheets** to see hours\n\n💡 Just ask me about any topic!`;
+      
+      setMessages(prev => [...prev, { role: "assistant", content: fallbackResponse }]);
       setIsLoading(false);
     }
-  }, [messages, isLoading]);
+  }, [messages, isLoading, isAdmin]);
 
   // Dynamic sizing classes based on expanded state and screen size
   const getPanelClasses = () => {
@@ -346,11 +384,11 @@ export function AIChatbot({ hasImportantAction = false }: { hasImportantAction?:
                       <img src={maureenImg} alt="Maureen" className="h-full w-full object-cover" />
                     </div>
                     <div className="rounded-2xl rounded-tl-none bg-slate-100 px-3 sm:px-4 py-2.5 text-sm sm:text-base text-slate-700 max-w-[85%]">
-                      G'day! I'm Maureen, your Carters Care assistant. Ask me about policies, procedures, incident reporting, compliance, or anything else work-related. 👋
+                      G'day! I'm Maureen, your care assistant. {isAdmin ? "As an admin, I can help you manage staff, approvals, and invoices." : "I can help you with your shifts, timesheets, and client notes."} Just ask! 👋
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-2 pl-10 sm:pl-11">
-                    {SUGGESTIONS.map((s) => (
+                    {suggestions.map((s) => (
                       <button
                         key={s}
                         onClick={() => sendMessage(s)}
@@ -385,7 +423,7 @@ export function AIChatbot({ hasImportantAction = false }: { hasImportantAction?:
                   style={m.role === "user" ? { background: "linear-gradient(135deg, #a78bfa, #8b5cf6)" } : {}}
                   >
                     {m.role === "assistant" ? (
-                      <div className="prose prose-sm sm:prose max-w-none [&_p]:my-1 [&_ul]:my-1 [&_ol]:my-1 [&_li]:my-0.5 [&_h1]:text-base [&_h2]:text-sm [&_h3]:text-sm">
+                      <div className="prose prose-sm sm:prose max-w-none [&_p]:my-1 [&_ul]:my-1 [&_ol]:my-1 [&_li]:my-0.5 [&_h1]:text-base [&_h2]:text-sm [&_h3]:text-sm [&_strong]:text-purple-700">
                         <ReactMarkdown>{m.content}</ReactMarkdown>
                       </div>
                     ) : (
@@ -394,6 +432,27 @@ export function AIChatbot({ hasImportantAction = false }: { hasImportantAction?:
                   </div>
                 </div>
               ))}
+
+              {/* Quick Links after response */}
+              {quickLinks.length > 0 && (
+                <div className="flex flex-wrap gap-2 pl-10 sm:pl-11 mt-2">
+                  {quickLinks.map((link) => (
+                    <a
+                      key={link.url}
+                      href={link.url}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setOpen(false);
+                        window.location.href = link.url;
+                      }}
+                      className="inline-flex items-center gap-1.5 text-xs sm:text-sm px-3 py-1.5 rounded-full bg-gradient-to-r from-purple-500 to-violet-500 text-white hover:from-purple-600 hover:to-violet-600 transition-all font-medium shadow-sm"
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                      {link.text}
+                    </a>
+                  ))}
+                </div>
+              )}
 
               {isLoading && messages[messages.length - 1]?.role === "user" && (
                 <div className="flex items-start gap-2">
