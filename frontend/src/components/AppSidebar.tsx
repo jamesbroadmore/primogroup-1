@@ -149,24 +149,28 @@ export function AppSidebar() {
     <Sidebar
       collapsible="icon"
       className="border-r border-slate-200/80 bg-white"
-      style={{ "--sidebar-width": "220px" } as any}
+      style={{ "--sidebar-width": "240px", "--sidebar-width-icon": "60px" } as any}
       data-testid="app-sidebar"
     >
-      {/* Logo Header */}
+      {/* Logo Header - Larger & Responsive */}
       <div
         className={`flex items-center border-b border-slate-100 ${
-          collapsed ? "justify-center px-2 py-3" : "gap-2.5 px-3 py-3"
+          collapsed ? "justify-center px-2 py-4" : "gap-3 px-4 py-4"
         }`}
       >
         <img
           src={cartersIcon}
           alt="Carters Care"
-          className="h-8 w-8 shrink-0"
+          className={`shrink-0 transition-all duration-200 ${
+            collapsed 
+              ? "h-10 w-10 sm:h-11 sm:w-11" 
+              : "h-11 w-11 sm:h-12 sm:w-12 md:h-14 md:w-14"
+          }`}
         />
         {!collapsed && (
           <div className="flex flex-col leading-tight">
-            <span className="text-sm font-bold text-slate-800">Carter's Care</span>
-            <span className="text-[9px] text-slate-400 font-medium uppercase tracking-wider">Platform</span>
+            <span className="text-base sm:text-lg md:text-xl font-bold text-slate-800">Carter's Care</span>
+            <span className="text-[10px] sm:text-[11px] text-slate-400 font-medium uppercase tracking-wider">Platform</span>
           </div>
         )}
       </div>

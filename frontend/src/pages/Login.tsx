@@ -81,11 +81,11 @@ export default function Login() {
         </div>
         
         <div className="relative z-10 text-center max-w-md">
-          <div className="flex items-center justify-center gap-3 mb-8">
-            <img src={cartersIcon} alt="" className="h-16 w-16 rounded-2xl shadow-xl" loading="lazy" />
+          <div className="flex items-center justify-center gap-4 mb-8">
+            <img src={cartersIcon} alt="" className="h-20 w-20 sm:h-24 sm:w-24 md:h-28 md:w-28 rounded-2xl shadow-xl" loading="lazy" />
             <div className="text-left">
-              <h1 className="text-3xl font-black text-slate-800 leading-tight">Carter's</h1>
-              <h1 className="text-3xl font-black leading-tight" style={{ background: "linear-gradient(135deg, #8b5cf6, #3b82f6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Care</h1>
+              <h1 className="text-4xl sm:text-5xl font-black text-slate-800 leading-tight">Carter's</h1>
+              <h1 className="text-4xl sm:text-5xl font-black leading-tight" style={{ background: "linear-gradient(135deg, #8b5cf6, #3b82f6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Care</h1>
             </div>
           </div>
           
@@ -112,9 +112,9 @@ export default function Login() {
         >
           {/* Mobile logo */}
           <div className="lg:hidden text-center mb-8">
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <img src={cartersIcon} alt="" className="h-10 w-10 rounded-xl shadow-md" loading="lazy" />
-              <img src={cartersLogo} alt="Carters Care Group" className="h-8" loading="lazy" />
+            <div className="flex items-center justify-center gap-3 mb-2">
+              <img src={cartersIcon} alt="" className="h-14 w-14 sm:h-16 sm:w-16 rounded-xl shadow-md" loading="lazy" />
+              <img src={cartersLogo} alt="Carters Care Group" className="h-10 sm:h-12" loading="lazy" />
             </div>
           </div>
 
