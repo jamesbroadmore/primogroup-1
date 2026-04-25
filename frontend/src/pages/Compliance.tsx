@@ -247,13 +247,13 @@ export default function Compliance() {
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b bg-secondary/50">
-                        <th className="text-left px-4 py-3 font-medium text-muted-foreground">Staff</th>
-                        <th className="text-left px-4 py-3 font-medium text-muted-foreground">Record</th>
-                        <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden md:table-cell">Type</th>
-                        <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden md:table-cell">Issue Date</th>
-                        <th className="text-left px-4 py-3 font-medium text-muted-foreground hidden md:table-cell">Expiry</th>
-                        <th className="text-left px-4 py-3 font-medium text-muted-foreground">Status</th>
+                      <tr className="border-b bg-slate-100/80">
+                        <th className="text-left px-4 py-3 text-xs font-bold text-slate-700 uppercase tracking-wider">Staff</th>
+                        <th className="text-left px-4 py-3 text-xs font-bold text-slate-700 uppercase tracking-wider">Record</th>
+                        <th className="text-left px-4 py-3 text-xs font-bold text-slate-700 uppercase tracking-wider hidden md:table-cell">Type</th>
+                        <th className="text-left px-4 py-3 text-xs font-bold text-slate-700 uppercase tracking-wider hidden md:table-cell">Issue Date</th>
+                        <th className="text-left px-4 py-3 text-xs font-bold text-slate-700 uppercase tracking-wider hidden md:table-cell">Expiry</th>
+                        <th className="text-left px-4 py-3 text-xs font-bold text-slate-700 uppercase tracking-wider">Status</th>
                       </tr>
                     </thead>
                     <tbody>

@@ -242,14 +242,14 @@ export function TableContainer({ children }: { children: React.ReactNode }) {
 export function TableHead({ children }: { children: React.ReactNode }) {
   return (
     <thead>
-      <tr className="border-b bg-slate-50/80">{children}</tr>
+      <tr className="border-b bg-slate-100/80">{children}</tr>
     </thead>
   );
 }
 
 export function Th({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
-    <th className={`text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider ${className}`}>
+    <th className={`text-left px-4 py-3 text-xs font-bold text-slate-700 uppercase tracking-wider ${className}`}>
       {children}
     </th>
   );

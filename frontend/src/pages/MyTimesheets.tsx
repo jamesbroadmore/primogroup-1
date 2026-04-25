@@ -242,13 +242,13 @@ export default function MyTimesheets() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="bg-slate-50">
-                    <th className="text-left text-xs font-semibold text-muted-foreground px-4 py-3">Date</th>
-                    <th className="text-left text-xs font-semibold text-muted-foreground px-4 py-3">Client</th>
-                    <th className="text-left text-xs font-semibold text-muted-foreground px-4 py-3">Check In</th>
-                    <th className="text-left text-xs font-semibold text-muted-foreground px-4 py-3">Check Out</th>
-                    <th className="text-left text-xs font-semibold text-muted-foreground px-4 py-3">Hours</th>
-                    <th className="text-left text-xs font-semibold text-muted-foreground px-4 py-3">Status</th>
+                  <tr className="bg-slate-100/80 border-b">
+                    <th className="text-left text-xs font-bold text-slate-700 uppercase tracking-wider px-4 py-3">Date</th>
+                    <th className="text-left text-xs font-bold text-slate-700 uppercase tracking-wider px-4 py-3">Client</th>
+                    <th className="text-left text-xs font-bold text-slate-700 uppercase tracking-wider px-4 py-3">Check In</th>
+                    <th className="text-left text-xs font-bold text-slate-700 uppercase tracking-wider px-4 py-3">Check Out</th>
+                    <th className="text-left text-xs font-bold text-slate-700 uppercase tracking-wider px-4 py-3">Hours</th>
+                    <th className="text-left text-xs font-bold text-slate-700 uppercase tracking-wider px-4 py-3">Status</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/50">

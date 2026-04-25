@@ -99,13 +99,13 @@ export default function Invoices() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b bg-slate-50/80">
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Invoice #</th>
-                    {isAdmin && <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Staff</th>}
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden md:table-cell">Date</th>
-                    <th className="text-right px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Total</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
-                    <th className="text-right px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Actions</th>
+                  <tr className="border-b bg-slate-100/80">
+                    <th className="text-left px-4 py-3 text-xs font-bold text-slate-700 uppercase tracking-wider">Invoice #</th>
+                    {isAdmin && <th className="text-left px-4 py-3 text-xs font-bold text-slate-700 uppercase tracking-wider">Staff</th>}
+                    <th className="text-left px-4 py-3 text-xs font-bold text-slate-700 uppercase tracking-wider hidden md:table-cell">Date</th>
+                    <th className="text-right px-4 py-3 text-xs font-bold text-slate-700 uppercase tracking-wider">Total</th>
+                    <th className="text-left px-4 py-3 text-xs font-bold text-slate-700 uppercase tracking-wider">Status</th>
+                    <th className="text-right px-4 py-3 text-xs font-bold text-slate-700 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
