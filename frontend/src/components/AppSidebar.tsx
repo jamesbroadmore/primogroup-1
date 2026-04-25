@@ -6,19 +6,12 @@ import {
   CalendarDays,
   Clock,
   AlertTriangle,
-  DollarSign,
   Receipt,
   BarChart3,
   Settings,
   LogOut,
-  ChevronRight,
   ChevronDown,
   Briefcase,
-  GraduationCap,
-  FileCheck,
-  Heart,
-  ShieldCheck,
-  User,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation } from "react-router-dom";
@@ -47,71 +40,44 @@ type NavGroup = {
   items: NavItem[];
 };
 
-// Cleaner, more organized navigation structure
+// Simplified workflow-oriented navigation
 const navGroups: NavGroup[] = [
   {
-    label: "Main",
-    adminOnly: true,
+    label: "Overview",
     items: [
       { title: "Dashboard", url: "/", icon: LayoutDashboard, adminOnly: true, iconClass: "icon-purple" },
     ],
   },
   {
-    label: "Team",
-    adminOnly: true,
-    collapsible: true,
-    defaultExpanded: true,
-    items: [
-      { title: "Staff", url: "/staff", icon: Users, adminOnly: true, iconClass: "icon-blue" },
-      { title: "HR & Docs", url: "/staff/hr", icon: Briefcase, adminOnly: true, iconClass: "icon-purple" },
-      { title: "Training", url: "/staff/training", icon: GraduationCap, adminOnly: true, iconClass: "icon-pink" },
-    ],
-  },
-  {
-    label: "Clients",
-    collapsible: true,
-    defaultExpanded: true,
-    items: [
-      { title: "All Clients", url: "/clients", icon: UserCircle, adminOnly: false, iconClass: "icon-teal" },
-      { title: "Care Plans", url: "/clients/care-plans", icon: Heart, adminOnly: false, iconClass: "icon-pink" },
-      { title: "Risk & Safety", url: "/clients/risk", icon: ShieldCheck, adminOnly: false, iconClass: "icon-orange" },
-    ],
-  },
-  {
-    label: "Operations",
+    label: "Daily Workflow",
     collapsible: true,
     defaultExpanded: true,
     items: [
       { title: "Roster", url: "/roster", icon: CalendarDays, adminOnly: false, iconClass: "icon-blue" },
       { title: "Timesheets", url: "/timesheets", icon: Clock, adminOnly: false, iconClass: "icon-yellow" },
+      { title: "Client Notes", url: "/clients", icon: UserCircle, adminOnly: false, iconClass: "icon-teal" },
       { title: "Incidents", url: "/incidents", icon: AlertTriangle, adminOnly: false, iconClass: "icon-orange" },
     ],
   },
   {
-    label: "My Workspace",
+    label: "My Tasks",
     collapsible: true,
     defaultExpanded: true,
     items: [
       { title: "My Roster", url: "/my-roster", icon: CalendarDays, adminOnly: false, iconClass: "icon-blue" },
       { title: "My Timesheets", url: "/my-timesheets", icon: Clock, adminOnly: false, iconClass: "icon-yellow" },
-      { title: "My Certs", url: "/my-compliance", icon: FileCheck, adminOnly: false, iconClass: "icon-green" },
     ],
   },
   {
-    label: "Finance",
+    label: "Admin",
     adminOnly: true,
     collapsible: true,
-    defaultExpanded: true,
+    defaultExpanded: false,
     items: [
+      { title: "Staff", url: "/staff", icon: Users, adminOnly: true, iconClass: "icon-blue" },
+      { title: "HR & Docs", url: "/staff/hr", icon: Briefcase, adminOnly: true, iconClass: "icon-purple" },
       { title: "Invoices", url: "/invoices", icon: Receipt, adminOnly: true, iconClass: "icon-indigo" },
-      { title: "Financials", url: "/financials", icon: DollarSign, adminOnly: true, iconClass: "icon-green" },
-      { title: "Reports", url: "/reports", icon: BarChart3, adminOnly: true, iconClass: "icon-purple" },
-    ],
-  },
-  {
-    label: "System",
-    adminOnly: true,
-    items: [
+      { title: "Reports", url: "/reports", icon: BarChart3, adminOnly: true, iconClass: "icon-green" },
       { title: "Settings", url: "/settings", icon: Settings, adminOnly: true, iconClass: "icon-slate" },
     ],
   },
