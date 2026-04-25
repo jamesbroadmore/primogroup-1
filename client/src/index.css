@@ -1,0 +1,62 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --forest-green: #1B4332;
+  --gold: #D4AF37;
+  --cream: #F5F1E8;
+  --charcoal: #2C2C2C;
+  --sage-green: #52B788;
+  --warm-beige: #FAF6F0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background-color: var(--cream);
+  color: var(--charcoal);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: Georgia, serif;
+  font-weight: 600;
+  color: var(--charcoal);
+}
+
+a {
+  color: var(--forest-green);
+  transition: color 0.3s ease;
+}
+
+a:hover {
+  color: var(--sage-green);
+}
+
+button {
+  transition: all 0.3s ease;
+}
+
+button:hover {
+  transform: translateY(-2px);
+}
+
+.gold-accent {
+  color: var(--gold);
+}
+
+.forest-green-bg {
+  background-color: var(--forest-green);
+}
+
+.container-custom {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+/* Smooth scrolling for anchor links */
+scroll-behavior: smooth;
