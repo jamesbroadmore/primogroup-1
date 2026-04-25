@@ -101,6 +101,16 @@ export function AppLayout({ children, title }: AppLayoutProps) {
 
   const totalAlerts = openIncidents + complianceAlerts;
 
+  // Build urgent message for Maureen based on alerts
+  const urgentMessages: string[] = [];
+  if (openIncidents > 0) {
+    urgentMessages.push(`**${openIncidents} Open Incident${openIncidents > 1 ? "s"  : ""}** - Please review and address immediately.`);
+  }
+  if (complianceAlerts > 0) {
+    urgentMessages.push(`**${complianceAlerts} Compliance Alert${complianceAlerts > 1 ? "s" : ""}** - Documents expiring or expired.`);
+  }
+  const urgentMessage = urgentMessages.join("\n\n");
+
   const initials = user?.user_metadata?.display_name
     ? user.user_metadata.display_name.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2)
     : user?.email?.slice(0, 2).toUpperCase() ?? "??";

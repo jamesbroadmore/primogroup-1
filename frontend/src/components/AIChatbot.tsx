@@ -94,7 +94,7 @@ function findQuickHelp(query: string): { response: string; links?: { text: strin
   return null;
 }
 
-export function AIChatbot({ hasImportantAction = false }: { hasImportantAction?: boolean }) {
+export function AIChatbot({ hasImportantAction = false, urgentMessage = "" }: { hasImportantAction?: boolean; urgentMessage?: string }) {
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([]);
@@ -102,7 +102,7 @@ export function AIChatbot({ hasImportantAction = false }: { hasImportantAction?:
   const [isLoading, setIsLoading] = useState(false);
   const [currentHint, setCurrentHint] = useState(0);
   const [showHint, setShowHint] = useState(true);
-  const [hasCheckedNotice, setHasCheckedNotice] = useState(false);
+  const [hasAcknowledged, setHasAcknowledged] = useState(false);
   const [quickLinks, setQuickLinks] = useState<{ text: string; url: string }[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -112,22 +112,33 @@ export function AIChatbot({ hasImportantAction = false }: { hasImportantAction?:
   const isAdmin = user?.user_metadata?.role === "admin" || user?.email?.includes("admin");
   const suggestions = isAdmin ? ADMIN_SUGGESTIONS : WORKER_SUGGESTIONS;
 
-  // Stop glowing when user opens chat with important action
-  useEffect(() => {
-    if (open && hasImportantAction) {
-      setHasCheckedNotice(true);
-    }
-  }, [open, hasImportantAction]);
+  // Aura only glows when there's urgent notification AND user hasn't acknowledged
+  const showUrgentGlow = hasImportantAction && !hasAcknowledged;
 
-  // Reset checked status when there's a new important action
+  // When user opens chat with urgent notification, mark as acknowledged
+  useEffect(() => {
+    if (open && hasImportantAction && !hasAcknowledged) {
+      // Show the urgent message first when opening
+      if (urgentMessage && messages.length === 0) {
+        setMessages([{ 
+          role: "assistant", 
+          content: `⚠️ **Attention Required**\n\n${urgentMessage}\n\n---\n\nOnce you've reviewed this, I'm here to help with anything else!`
+        }]);
+      }
+      // Mark as acknowledged after a brief delay (user has seen it)
+      const timer = setTimeout(() => {
+        setHasAcknowledged(true);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [open, hasImportantAction, hasAcknowledged, urgentMessage, messages.length]);
+
+  // Reset acknowledged state ONLY when the urgent notification changes (new notification)
   useEffect(() => {
     if (!hasImportantAction) {
-      setHasCheckedNotice(false);
+      setHasAcknowledged(false);
     }
   }, [hasImportantAction]);
-
-  // Determine if we should show the urgent glow
-  const showUrgentGlow = hasImportantAction && !hasCheckedNotice;
 
   // Rotate helpful hints
   useEffect(() => {
