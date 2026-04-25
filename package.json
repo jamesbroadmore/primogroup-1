@@ -18,11 +18,10 @@
     "cors": "^2.8.5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "wouter": "^2.13.0",
+    "wouter": "^3.0.2",
     "framer-motion": "^10.16.4",
     "lucide-react": "^0.292.0",
-    "react-hook-form": "^7.48.0",
-    "tailwindcss": "^3.3.6"
+    "react-hook-form": "^7.48.0"
   },
   "devDependencies": {
     "@types/react": "^18.2.28",
