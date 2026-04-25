@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { X, Send, Loader2, User, Maximize2, Minimize2 } from "lucide-react";
+import { X, Send, Loader2, User, Maximize2, Minimize2, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,14 +16,41 @@ const SUGGESTIONS = [
   "When do compliance docs expire?",
 ];
 
-export function AIChatbot() {
+// Helpful hints that rotate
+const HELPFUL_HINTS = [
+  "💡 Need help? I'm here!",
+  "📋 Ask about timesheets",
+  "🔔 Got questions? Tap me!",
+  "✨ I can help with compliance",
+  "📝 Ask about client notes",
+];
+
+export function AIChatbot({ hasImportantAction = false }: { hasImportantAction?: boolean }) {
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [currentHint, setCurrentHint] = useState(0);
+  const [showHint, setShowHint] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Rotate helpful hints
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentHint((prev) => (prev + 1) % HELPFUL_HINTS.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Hide hint after user has seen a few
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowHint(false);
+    }, 30000); // Hide after 30 seconds
+    return () => clearTimeout(timer);
+  }, []);
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -141,7 +168,7 @@ export function AIChatbot() {
 
   return (
     <>
-      {/* Floating trigger - Maureen's Photo */}
+      {/* Floating trigger - Maureen's Photo - LARGER & MORE PROMINENT */}
       <AnimatePresence>
         {!open && (
           <motion.button
@@ -149,24 +176,90 @@ export function AIChatbot() {
             animate={{ scale: 1 }}
             exit={{ scale: 0 }}
             onClick={() => setOpen(true)}
-            className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 group"
+            className="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 z-50 group"
             data-testid="maureen-chat-trigger"
           >
             <div className="relative">
-              {/* Photo - larger on desktop */}
-              <div className="h-14 w-14 sm:h-16 sm:w-16 md:h-18 md:w-18 lg:h-20 lg:w-20 rounded-full overflow-hidden shadow-xl border-4 border-white hover:scale-105 transition-transform">
+              {/* Glowing aura ring - pulses when important action required */}
+              <motion.div 
+                className={`absolute -inset-3 rounded-full ${hasImportantAction ? 'bg-gradient-to-r from-amber-400 via-orange-400 to-rose-400' : 'bg-gradient-to-r from-purple-400 via-violet-400 to-indigo-400'}`}
+                animate={hasImportantAction ? {
+                  scale: [1, 1.15, 1],
+                  opacity: [0.6, 0.9, 0.6],
+                } : {
+                  scale: [1, 1.08, 1],
+                  opacity: [0.4, 0.6, 0.4],
+                }}
+                transition={{
+                  duration: hasImportantAction ? 1.2 : 2,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+              />
+              
+              {/* Secondary glow ring */}
+              <motion.div 
+                className={`absolute -inset-1.5 rounded-full ${hasImportantAction ? 'bg-amber-300' : 'bg-purple-300'}`}
+                animate={{
+                  scale: [1, 1.05, 1],
+                  opacity: [0.5, 0.7, 0.5],
+                }}
+                transition={{
+                  duration: 1.5,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: 0.2,
+                }}
+              />
+              
+              {/* Photo container - MUCH LARGER */}
+              <div className="relative h-20 w-20 sm:h-24 sm:w-24 md:h-28 md:w-28 lg:h-32 lg:w-32 rounded-full overflow-hidden shadow-2xl border-4 border-white hover:scale-105 transition-transform bg-white">
                 <img 
                   src={maureenImg} 
                   alt="Ask Maureen" 
                   className="h-full w-full object-cover"
                 />
               </div>
-              {/* Online indicator */}
-              <div className="absolute bottom-0 right-0 h-4 w-4 sm:h-5 sm:w-5 rounded-full bg-emerald-400 border-2 border-white" />
-              {/* Tooltip on hover - hidden on mobile */}
-              <div className="hidden sm:block absolute bottom-full right-0 mb-2 px-3 py-1.5 bg-slate-800 text-white text-xs font-medium rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-lg">
+              
+              {/* Online indicator - larger */}
+              <div className={`absolute bottom-1 right-1 h-5 w-5 sm:h-6 sm:w-6 rounded-full border-3 border-white shadow-md ${hasImportantAction ? 'bg-amber-400' : 'bg-emerald-400'}`}>
+                {hasImportantAction && (
+                  <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 text-white absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+                )}
+              </div>
+              
+              {/* Helpful hint bubble - rotates through hints */}
+              <AnimatePresence>
+                {showHint && (
+                  <motion.div 
+                    initial={{ opacity: 0, x: 10, scale: 0.9 }}
+                    animate={{ opacity: 1, x: 0, scale: 1 }}
+                    exit={{ opacity: 0, x: 10, scale: 0.9 }}
+                    className="absolute bottom-full right-0 mb-3 sm:right-auto sm:left-full sm:bottom-auto sm:top-1/2 sm:-translate-y-1/2 sm:ml-3 sm:mb-0"
+                  >
+                    <motion.div 
+                      key={currentHint}
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -5 }}
+                      className={`px-4 py-2.5 ${hasImportantAction ? 'bg-gradient-to-r from-amber-500 to-orange-500' : 'bg-gradient-to-r from-purple-600 to-violet-600'} text-white text-sm font-medium rounded-2xl shadow-xl whitespace-nowrap`}
+                    >
+                      {HELPFUL_HINTS[currentHint]}
+                      {/* Arrow pointer */}
+                      <div className={`absolute top-full right-6 sm:top-1/2 sm:right-full sm:-translate-y-1/2 sm:mr-0 border-8 border-transparent ${hasImportantAction ? 'border-t-amber-500 sm:border-t-transparent sm:border-r-purple-600' : 'border-t-purple-600 sm:border-t-transparent sm:border-r-purple-600'}`} 
+                        style={{ 
+                          borderTopColor: hasImportantAction ? '#f59e0b' : '#9333ea',
+                          borderRightColor: 'transparent',
+                        }}
+                      />
+                    </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+              
+              {/* "Ask Maureen" label - always visible */}
+              <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 px-3 py-1 bg-slate-800 text-white text-xs font-semibold rounded-full shadow-lg whitespace-nowrap">
                 Ask Maureen
-                <div className="absolute top-full right-4 border-4 border-transparent border-t-slate-800" />
               </div>
             </div>
           </motion.button>

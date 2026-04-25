@@ -197,7 +197,7 @@ export function AppLayout({ children, title }: AppLayoutProps) {
             {children}
           </main>
         </div>
-        <AIChatbot />
+        <AIChatbot hasImportantAction={totalAlerts > 0} />
       </div>
     </SidebarProvider>
   );
