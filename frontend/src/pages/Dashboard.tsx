@@ -179,7 +179,7 @@ export default function Dashboard() {
         >
           <div>
             <h2 className="text-2xl font-bold text-foreground">
-              <span style={{ fontWeight: 800 }}>Professional</span>{" "}
+              <span style={{ fontWeight: 800 }}>Your</span>{" "}
               <span className="text-muted-foreground font-normal">Dashboard</span>
             </h2>
             <p className="text-sm text-muted-foreground mt-0.5">

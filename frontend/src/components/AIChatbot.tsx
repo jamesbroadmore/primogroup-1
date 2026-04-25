@@ -33,8 +33,26 @@ export function AIChatbot({ hasImportantAction = false }: { hasImportantAction?:
   const [isLoading, setIsLoading] = useState(false);
   const [currentHint, setCurrentHint] = useState(0);
   const [showHint, setShowHint] = useState(true);
+  const [hasCheckedNotice, setHasCheckedNotice] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Stop glowing when user opens chat with important action
+  useEffect(() => {
+    if (open && hasImportantAction) {
+      setHasCheckedNotice(true);
+    }
+  }, [open, hasImportantAction]);
+
+  // Reset checked status when there's a new important action
+  useEffect(() => {
+    if (!hasImportantAction) {
+      setHasCheckedNotice(false);
+    }
+  }, [hasImportantAction]);
+
+  // Determine if we should show the urgent glow
+  const showUrgentGlow = hasImportantAction && !hasCheckedNotice;
 
   // Rotate helpful hints
   useEffect(() => {
@@ -180,10 +198,10 @@ export function AIChatbot({ hasImportantAction = false }: { hasImportantAction?:
             data-testid="maureen-chat-trigger"
           >
             <div className="relative">
-              {/* Glowing aura ring - pulses when important action required */}
+              {/* Glowing aura ring - pulses when important action required, stops after checked */}
               <motion.div 
-                className={`absolute -inset-3 rounded-full ${hasImportantAction ? 'bg-gradient-to-r from-amber-400 via-orange-400 to-rose-400' : 'bg-gradient-to-r from-purple-400 via-violet-400 to-indigo-400'}`}
-                animate={hasImportantAction ? {
+                className={`absolute -inset-3 rounded-full ${showUrgentGlow ? 'bg-gradient-to-r from-amber-400 via-orange-400 to-rose-400' : 'bg-gradient-to-r from-purple-400 via-violet-400 to-indigo-400'}`}
+                animate={showUrgentGlow ? {
                   scale: [1, 1.15, 1],
                   opacity: [0.6, 0.9, 0.6],
                 } : {
@@ -191,7 +209,7 @@ export function AIChatbot({ hasImportantAction = false }: { hasImportantAction?:
                   opacity: [0.4, 0.6, 0.4],
                 }}
                 transition={{
-                  duration: hasImportantAction ? 1.2 : 2,
+                  duration: showUrgentGlow ? 1.2 : 2,
                   repeat: Infinity,
                   ease: "easeInOut",
                 }}
@@ -199,7 +217,7 @@ export function AIChatbot({ hasImportantAction = false }: { hasImportantAction?:
               
               {/* Secondary glow ring */}
               <motion.div 
-                className={`absolute -inset-1.5 rounded-full ${hasImportantAction ? 'bg-amber-300' : 'bg-purple-300'}`}
+                className={`absolute -inset-1.5 rounded-full ${showUrgentGlow ? 'bg-amber-300' : 'bg-purple-300'}`}
                 animate={{
                   scale: [1, 1.05, 1],
                   opacity: [0.5, 0.7, 0.5],
@@ -222,8 +240,8 @@ export function AIChatbot({ hasImportantAction = false }: { hasImportantAction?:
               </div>
               
               {/* Online indicator - larger */}
-              <div className={`absolute bottom-1 right-1 h-5 w-5 sm:h-6 sm:w-6 rounded-full border-3 border-white shadow-md ${hasImportantAction ? 'bg-amber-400' : 'bg-emerald-400'}`}>
-                {hasImportantAction && (
+              <div className={`absolute bottom-1 right-1 h-5 w-5 sm:h-6 sm:w-6 rounded-full border-3 border-white shadow-md ${showUrgentGlow ? 'bg-amber-400' : 'bg-emerald-400'}`}>
+                {showUrgentGlow && (
                   <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 text-white absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
                 )}
               </div>
@@ -242,13 +260,13 @@ export function AIChatbot({ hasImportantAction = false }: { hasImportantAction?:
                       initial={{ opacity: 0, y: 5 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -5 }}
-                      className={`px-4 py-2.5 ${hasImportantAction ? 'bg-gradient-to-r from-amber-500 to-orange-500' : 'bg-gradient-to-r from-purple-600 to-violet-600'} text-white text-sm font-medium rounded-2xl shadow-xl whitespace-nowrap`}
+                      className={`px-4 py-2.5 ${showUrgentGlow ? 'bg-gradient-to-r from-amber-500 to-orange-500' : 'bg-gradient-to-r from-purple-600 to-violet-600'} text-white text-sm font-medium rounded-2xl shadow-xl whitespace-nowrap`}
                     >
-                      {HELPFUL_HINTS[currentHint]}
+                      {showUrgentGlow ? "⚠️ Action required!" : HELPFUL_HINTS[currentHint]}
                       {/* Arrow pointer */}
-                      <div className={`absolute top-full right-6 sm:top-1/2 sm:right-full sm:-translate-y-1/2 sm:mr-0 border-8 border-transparent ${hasImportantAction ? 'border-t-amber-500 sm:border-t-transparent sm:border-r-purple-600' : 'border-t-purple-600 sm:border-t-transparent sm:border-r-purple-600'}`} 
+                      <div className={`absolute top-full right-6 sm:top-1/2 sm:right-full sm:-translate-y-1/2 sm:mr-0 border-8 border-transparent`} 
                         style={{ 
-                          borderTopColor: hasImportantAction ? '#f59e0b' : '#9333ea',
+                          borderTopColor: showUrgentGlow ? '#f59e0b' : '#9333ea',
                           borderRightColor: 'transparent',
                         }}
                       />

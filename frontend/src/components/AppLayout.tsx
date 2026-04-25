@@ -193,8 +193,34 @@ export function AppLayout({ children, title }: AppLayoutProps) {
             </div>
           </header>
 
-          <main className="flex-1 overflow-auto p-4 md:p-6 bg-background">
-            {children}
+          <main className="flex-1 overflow-auto p-4 md:p-6 bg-background relative">
+            {/* Decorative background swirls and waves */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              {/* Top right purple swirl */}
+              <div className="absolute -top-20 -right-20 w-96 h-96 rounded-full opacity-[0.04]" 
+                style={{ background: "radial-gradient(circle, #8b5cf6 0%, transparent 70%)" }} />
+              
+              {/* Bottom left teal wave */}
+              <div className="absolute -bottom-32 -left-32 w-[500px] h-[500px] rounded-full opacity-[0.03]" 
+                style={{ background: "radial-gradient(circle, #14b8a6 0%, transparent 70%)" }} />
+              
+              {/* Center blue gradient */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] rounded-full opacity-[0.02] rotate-12" 
+                style={{ background: "radial-gradient(ellipse, #3b82f6 0%, transparent 60%)" }} />
+              
+              {/* Top left pink accent */}
+              <div className="absolute top-20 left-20 w-64 h-64 rounded-full opacity-[0.03]" 
+                style={{ background: "radial-gradient(circle, #ec4899 0%, transparent 70%)" }} />
+              
+              {/* Bottom right green wave */}
+              <div className="absolute -bottom-10 right-1/4 w-72 h-72 rounded-full opacity-[0.03]" 
+                style={{ background: "radial-gradient(circle, #22c55e 0%, transparent 70%)" }} />
+            </div>
+            
+            {/* Main content */}
+            <div className="relative z-10">
+              {children}
+            </div>
           </main>
         </div>
         <AIChatbot hasImportantAction={totalAlerts > 0} />

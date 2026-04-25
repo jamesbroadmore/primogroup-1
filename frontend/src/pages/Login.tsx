@@ -110,11 +110,10 @@ export default function Login() {
           animate={{ opacity: 1, y: 0 }}
           className="w-full max-w-sm"
         >
-          {/* Mobile logo */}
+          {/* Mobile logo - single logo only */}
           <div className="lg:hidden text-center mb-8">
             <div className="flex items-center justify-center gap-3 mb-2">
-              <img src={cartersIcon} alt="" className="h-14 w-14 sm:h-16 sm:w-16 rounded-xl shadow-md" loading="lazy" />
-              <img src={cartersLogo} alt="Carters Care Group" className="h-10 sm:h-12" loading="lazy" />
+              <img src={cartersLogo} alt="Carters Care Group" className="h-12 sm:h-14" loading="lazy" />
             </div>
           </div>
 
