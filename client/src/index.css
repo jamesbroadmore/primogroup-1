@@ -57,6 +57,3 @@ button:hover {
   margin: 0 auto;
   padding: 0 1rem;
 }
-
-/* Smooth scrolling for anchor links */
-scroll-behavior: smooth;

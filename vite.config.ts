@@ -10,6 +10,9 @@ export default defineConfig({
       '@': path.resolve(__dirname, './client/src'),
     },
   },
+  css: {
+    lightningcss: false,
+  },
   server: {
     proxy: {
       '/api': {
