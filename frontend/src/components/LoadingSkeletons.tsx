@@ -1,7 +1,7 @@
 import { Skeleton } from "@/components/ui/skeleton";
 
 // Page skeleton for dashboard-style pages
-export function PageSkeleton() {
+export function PageSkeleton(): React.ReactElement {
   return (
     <div className="p-6 space-y-6 animate-pulse" data-testid="page-skeleton">
       {/* Header skeleton */}
@@ -46,8 +46,12 @@ export function PageSkeleton() {
   );
 }
 
+interface CardSkeletonProps {
+  className?: string;
+}
+
 // Card skeleton for individual cards
-export function CardSkeleton({ className = "" }: { className?: string }) {
+export function CardSkeleton({ className = "" }: CardSkeletonProps): React.ReactElement {
   return (
     <div className={`bg-white rounded-2xl p-5 border border-slate-100 ${className}`} data-testid="card-skeleton">
       <Skeleton className="h-4 w-24 mb-3" />
@@ -58,7 +62,7 @@ export function CardSkeleton({ className = "" }: { className?: string }) {
 }
 
 // Table row skeleton
-export function TableRowSkeleton() {
+export function TableRowSkeleton(): React.ReactElement {
   return (
     <div className="p-4 flex items-center gap-4" data-testid="table-row-skeleton">
       <Skeleton className="h-10 w-10 rounded-full" />
@@ -71,8 +75,12 @@ export function TableRowSkeleton() {
   );
 }
 
+interface ListSkeletonProps {
+  count?: number;
+}
+
 // List skeleton for mobile views
-export function ListSkeleton({ count = 5 }: { count?: number }) {
+export function ListSkeleton({ count = 5 }: ListSkeletonProps): React.ReactElement {
   return (
     <div className="space-y-3" data-testid="list-skeleton">
       {[...Array(count)].map((_, i) => (
@@ -91,7 +99,7 @@ export function ListSkeleton({ count = 5 }: { count?: number }) {
 }
 
 // Form skeleton
-export function FormSkeleton() {
+export function FormSkeleton(): React.ReactElement {
   return (
     <div className="space-y-4" data-testid="form-skeleton">
       {[...Array(4)].map((_, i) => (
@@ -105,9 +113,13 @@ export function FormSkeleton() {
   );
 }
 
+interface AvatarSkeletonProps {
+  size?: "sm" | "md" | "lg";
+}
+
 // Avatar skeleton
-export function AvatarSkeleton({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
-  const sizeClasses = {
+export function AvatarSkeleton({ size = "md" }: AvatarSkeletonProps): React.ReactElement {
+  const sizeClasses: Record<"sm" | "md" | "lg", string> = {
     sm: "h-8 w-8",
     md: "h-10 w-10",
     lg: "h-14 w-14",

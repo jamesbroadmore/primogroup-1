@@ -7,8 +7,32 @@ import { useAuth } from "@/contexts/AuthContext";
 import { getPerthGreeting, getPerthDate, formatPerthTime } from "@/lib/perth-time";
 import { useNavigate } from "react-router-dom";
 
+// Type definitions
+interface ShiftData {
+  id: string;
+  shift_date: string;
+  start_time: string;
+  staff?: {
+    preferred_name: string | null;
+    first_name: string;
+    last_name: string;
+  };
+  client?: {
+    first_name: string;
+    last_name: string;
+  };
+}
+
+interface CheckInData {
+  id: string;
+  staff_name: string;
+  client_name: string | null;
+  check_in_time: string;
+  status: string;
+}
+
 // Generate avatar initials + color from name
-function getAvatarProps(name: string) {
+function getAvatarProps(name: string): { initials: string; color: string } {
   const colors = [
     "linear-gradient(135deg, #f472b6, #ec4899)",
     "linear-gradient(135deg, #fb923c, #f97316)",
@@ -28,6 +52,15 @@ function getAvatarProps(name: string) {
   return { initials, color: colors[colorIdx] };
 }
 
+interface StatCardProps {
+  label: string;
+  value: number | string;
+  sub?: string;
+  gradient: string;
+  icon: React.ComponentType<{ className: string }>;
+  href?: string;
+}
+
 function StatCard({
   label,
   value,
@@ -35,14 +68,7 @@ function StatCard({
   gradient,
   icon: Icon,
   href,
-}: {
-  label: string;
-  value: number | string;
-  sub?: string;
-  gradient: string;
-  icon: any;
-  href?: string;
-}) {
+}: StatCardProps) {
   const navigate = useNavigate();
   return (
     <motion.div
@@ -310,7 +336,7 @@ export default function Dashboard() {
               </div>
             ) : (
               <div className="divide-y divide-border/30">
-                {upcomingShifts.map((shift: any, i: number) => {
+                {upcomingShifts.map((shift: ShiftData, i: number) => {
                   const staffName = shift.staff
                     ? `${shift.staff.preferred_name || shift.staff.first_name} ${shift.staff.last_name}`
                     : "Unknown";
@@ -391,7 +417,7 @@ export default function Dashboard() {
               </div>
             ) : (
               <div className="divide-y divide-border/30">
-                {recentCheckins.map((c: any) => {
+                {recentCheckins.map((c: CheckInData) => {
                   const avatarProps = getAvatarProps(c.staff_name || "UN");
                   return (
                     <div key={c.id} className="flex items-center gap-3 px-4 py-3 hover:bg-secondary/30 transition-colors">

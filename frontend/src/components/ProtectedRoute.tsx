@@ -7,7 +7,7 @@ interface ProtectedRouteProps {
   adminOnly?: boolean;
 }
 
-export function ProtectedRoute({ children, adminOnly = false }: ProtectedRouteProps) {
+export function ProtectedRoute({ children, adminOnly = false }: ProtectedRouteProps): React.ReactElement {
   const { session, loading, isAdmin, role } = useAuth();
 
   if (loading) {
@@ -32,7 +32,7 @@ export function ProtectedRoute({ children, adminOnly = false }: ProtectedRoutePr
   }
 
   if (adminOnly && !isAdmin) {
-    // Redirect support workers to their friendly home page (Option 3)
+    // Redirect support workers to their friendly home page
     return <Navigate to="/worker" replace />;
   }
 

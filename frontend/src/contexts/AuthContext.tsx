@@ -21,21 +21,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [role, setRole] = useState<AppRole | null>(null);
 
-  const fetchRole = async (userId: string) => {
-    const { data } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", userId)
-      .single();
-    setRole((data?.role as AppRole) ?? "user");
+  const fetchRole = async (userId: string): Promise<void> => {
+    try {
+      const { data, error } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId)
+        .single();
+      
+      if (error) {
+        console.error("Error fetching user role:", error);
+        setRole("user");
+        return;
+      }
+
+      if (data && data.role && (data.role === "admin" || data.role === "moderator" || data.role === "user")) {
+        setRole(data.role as AppRole);
+      } else {
+        setRole("user");
+      }
+    } catch (err) {
+      console.error("Failed to fetch user role:", err);
+      setRole("user");
+    }
   };
 
   useEffect(() => {
+    let mounted = true;
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
+        if (!mounted) return;
         setSession(session);
         if (session?.user) {
-          setTimeout(() => fetchRole(session.user.id), 0);
+          void fetchRole(session.user.id);
         } else {
           setRole(null);
         }
@@ -43,15 +62,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     );
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    void supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!mounted) return;
       setSession(session);
       if (session?.user) {
-        fetchRole(session.user.id);
+        void fetchRole(session.user.id);
+      } else {
+        setLoading(false);
       }
-      setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {

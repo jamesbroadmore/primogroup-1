@@ -15,7 +15,7 @@ export default defineConfig(({ mode }) => ({
   },
   build: {
     outDir: "dist",
-    sourcemap: false,
+    sourcemap: mode === "development",
     minify: "esbuild",
     chunkSizeWarningLimit: 600,
     rollupOptions: {

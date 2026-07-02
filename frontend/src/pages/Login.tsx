@@ -56,8 +56,9 @@ export default function Login() {
     try {
       await signIn(email, password);
       toast.success("Welcome back!");
-    } catch (err: any) {
-      toast.error(err.message || "Authentication failed");
+    } catch (err) {
+      const error = err as { message?: string };
+      toast.error(error?.message || "Authentication failed");
     } finally {
       setLoading(false);
     }
